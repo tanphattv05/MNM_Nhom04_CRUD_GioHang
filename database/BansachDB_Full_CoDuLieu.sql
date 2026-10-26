@@ -1,8 +1,15 @@
-﻿/*==============================================================*/
+/*==============================================================*/
 /* DBMS name:      Microsoft SQL Server 2017                    */
 /* Created on:     10/24/2026 2:52:42 PM                        */
 /*==============================================================*/
+IF DB_ID(N'BanSachDB') IS NULL
+BEGIN
+    CREATE DATABASE BanSachDB;
+END
+GO
 
+USE BanSachDB;
+GO
 
 if exists (select 1
    from sys.sysreferences r join sys.sysobjects o on (o.id = r.constid and o.type = 'F')
