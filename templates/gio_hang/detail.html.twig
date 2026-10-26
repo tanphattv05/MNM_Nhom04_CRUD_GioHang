@@ -7,7 +7,7 @@
 <p>Thời gian gửi: {{ cart.GIO_HANG_THOI_GIAN ? cart.GIO_HANG_THOI_GIAN|date('d/m/Y H:i') : 'Chưa có' }}</p>
 {% if admin %}<p>Khách hàng: {{ cart.THANH_VIEN_HO_TEN ?: 'Chưa có tên' }} ({{ cart.THANH_VIEN_TEN_DANG_NHAP ?? 'Chưa xác định' }})</p>{% endif %}
 <p>Quản trị viên phụ trách: {{ cart.QTV_HO_TEN ?: (cart.QTV_USER_ADMIN ?? 'Chưa phân công') }}</p>
-<p class="cart-read-note">Ghi chú: {{ cart.GIO_HANG_GHI_CHU ?: 'Không có ghi chú' }}</p></section>
+<p class="cart-read-note">{{ cart.GIO_HANG_TRANG_THAI == 'Từ chối' ? 'Lý do từ chối' : 'Ghi chú' }}: {{ cart.GIO_HANG_GHI_CHU ?: 'Không có ghi chú' }}</p></section>
 <p>Giá và tổng tiền dưới đây được tính theo giá sách hiện tại, không phải giá lịch sử tại thời điểm gửi giỏ.</p>
 <section class="card read-table"><table><thead><tr><th scope="col">Sách</th><th scope="col">Số lượng</th><th scope="col">Giá hiện tại</th><th scope="col">Thành tiền hiện tại</th></tr></thead><tbody>
 {% for line in lines %}<tr><td>{{ line.SACH_TEN_SACH ?: 'Sách chưa có thông tin' }} (#{{ line.SACH_ID_SACH }})</td><td>{{ line.MUA_SO_LUONG_MUA }}</td><td>{{ line.SACH_GIA_BAN is null ? 'Chưa có giá' : line.SACH_GIA_BAN|vnd }}</td><td>{{ line.subtotal is null ? 'Chưa đủ dữ liệu giá' : line.subtotal|vnd }}</td></tr>
@@ -15,4 +15,20 @@
 </tbody></table></section><div class="summary-row grand-total"><span>Tổng theo giá hiện tại</span><strong>{{ cart.current_total is null ? 'Chưa đủ dữ liệu giá' : cart.current_total|vnd }}</strong></div>
 
 {% if not admin and cart.GIO_HANG_TRANG_THAI == 'Chờ duyệt' %}<a class="button button-small" href="{{ path('app_cart_edit', {id:cart.GIO_HANG_ID_GIO}) }}">Sửa giỏ hàng</a>{% endif %}
+{% if admin and cart.GIO_HANG_TRANG_THAI == 'Chờ duyệt' %}
+<section class="card history-card">
+<h2>Xử lý giỏ hàng</h2>
+<form method="post" action="{{ path('app_admin_cart_review', {id:cart.GIO_HANG_ID_GIO, action:'approve'}) }}" data-turbo="false">
+<input type="hidden" name="_token" value="{{ csrf_token('cart_approve_' ~ cart.GIO_HANG_ID_GIO) }}">
+<button class="button" type="submit">Duyệt</button>
+</form>
+<form method="post" action="{{ path('app_admin_cart_review', {id:cart.GIO_HANG_ID_GIO, action:'reject'}) }}" data-turbo="false">
+<input type="hidden" name="_token" value="{{ csrf_token('cart_reject_' ~ cart.GIO_HANG_ID_GIO) }}">
+<label for="reject-reason">Lý do từ chối (bắt buộc)</label>
+<textarea id="reject-reason" name="reason" required maxlength="255" rows="3"></textarea>
+<p>Lý do từ chối sẽ thay thế ghi chú của giỏ hàng.</p>
+<button class="button" type="submit">Từ chối</button>
+</form>
+</section>
+{% endif %}
 {% endblock %}

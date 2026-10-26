@@ -115,4 +115,45 @@ final class CartService
             $this->db->executeStatement('UPDATE dbo.GIO_HANG SET GIO_HANG_GHI_CHU = ? WHERE GIO_HANG_ID_GIO = ?', [$note === '' ? null : $note, $id]);
         });
     }
+    /** Lock order: cart, lines, then books in ascending ID order. */
+    public function review(Account $admin, int $id, string $action, string $reason = ''): void
+    {
+        if (!$admin->admin) { throw new \DomainException('Chỉ Admin được xử lý giỏ hàng.'); }
+        if (!in_array($action, ['approve', 'reject'], true)) { throw new \DomainException('Thao tác không hợp lệ.'); }
+        $reason = trim($reason);
+        if ($action === 'reject' && ($reason === '' || mb_strlen($reason) > 255)) {
+            throw new \DomainException('Lý do từ chối bắt buộc nhập và tối đa 255 ký tự.');
+        }
+        $this->db->transactional(function () use ($admin, $id, $action, $reason): void {
+            $cart = $this->db->fetchAssociative('SELECT GIO_HANG_TRANG_THAI, GIO_HANG_GHI_CHU FROM dbo.GIO_HANG WITH (UPDLOCK, HOLDLOCK) WHERE GIO_HANG_ID_GIO = ?', [$id]);
+            if (!$cart) { throw new \DomainException('Không tìm thấy giỏ hàng.'); }
+            if ($cart['GIO_HANG_TRANG_THAI'] !== 'Chờ duyệt') {
+                throw new \DomainException('Giỏ đã được xử lý hoặc không ở trạng thái Chờ duyệt.');
+            }
+            $note = $cart['GIO_HANG_GHI_CHU'];
+            if ($action === 'reject') {
+                // Existing schema has one note field; rejected carts display it as the reason.
+                $note = $reason;
+            } else {
+                $lines = $this->db->fetchAllAssociative('SELECT SACH_ID_SACH, MUA_SO_LUONG_MUA FROM dbo.MUA WITH (UPDLOCK, HOLDLOCK) WHERE GIO_HANG_ID_GIO = ? ORDER BY SACH_ID_SACH', [$id]);
+                if (!$lines) { throw new \DomainException('Không thể duyệt giỏ hàng rỗng.'); }
+                // Aggregate legacy duplicate lines so stock is checked against the full quantity.
+                $items = [];
+                foreach ($lines as $line) {
+                    $quantity = self::quantity((string)$line['MUA_SO_LUONG_MUA']);
+                    $bookId = (int)$line['SACH_ID_SACH'];
+                    $items[$bookId] = ($items[$bookId] ?? 0) + $quantity;
+                }
+                ksort($items);
+                foreach ($items as $bookId => $quantity) {
+                    $book = $this->db->fetchAssociative('SELECT * FROM dbo.SACH WITH (UPDLOCK, HOLDLOCK) WHERE SACH_ID_SACH = ?', [$bookId]);
+                    $this->validate($book, $quantity);
+                    $changed = $this->db->executeStatement('UPDATE dbo.SACH SET SACH_SO_LUONG = SACH_SO_LUONG - ? WHERE SACH_ID_SACH = ? AND SACH_SO_LUONG >= ?', [$quantity, $bookId, $quantity]);
+                    if ($changed !== 1) { throw new \DomainException('Tồn kho đã thay đổi. Vui lòng thử lại.'); }
+                }
+            }
+            $changed = $this->db->executeStatement('UPDATE dbo.GIO_HANG SET GIO_HANG_TRANG_THAI = ?, QTV_USER_ADMIN = ?, GIO_HANG_GHI_CHU = ? WHERE GIO_HANG_ID_GIO = ? AND GIO_HANG_TRANG_THAI = ?', [$action === 'approve' ? 'Đã duyệt' : 'Từ chối', $admin->id, $note, $id, 'Chờ duyệt']);
+            if ($changed !== 1) { throw new \DomainException('Giỏ đã thay đổi. Vui lòng tải lại trang.'); }
+        });
+    }
 }
