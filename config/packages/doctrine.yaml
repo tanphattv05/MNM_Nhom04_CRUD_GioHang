@@ -13,7 +13,9 @@ doctrine:
             Encrypt: '1'
             TrustServerCertificate: '1'
 
-        profiling_collect_backtrace: '%kernel.debug%'
+        logging: false
+        profiling: false
+        profiling_collect_backtrace: false
         use_savepoints: true
     orm:
         auto_generate_proxy_classes: true

@@ -1,0 +1,10 @@
+{% extends 'account/layout.html.twig' %}
+{% block title %}{{ admin ? 'Đăng nhập Admin' : 'Đăng nhập' }} · Nhà sách Nhóm 04{% endblock %}
+{% block content %}<div class="auth-grid"><aside class="auth-intro"><p class="eyebrow">{{ admin ? 'DÀNH CHO QUẢN TRỊ VIÊN' : 'CHÀO MỪNG BẠN TRỞ LẠI' }}</p><h1>Mỗi trang sách,<br>một chân trời mới.</h1><p>{{ admin ? 'Đăng nhập để truy cập không gian quản trị nhà sách.' : 'Một không gian riêng để quản lý tài khoản và bắt đầu hành trình cùng những trang sách.' }}</p><div class="intro-note"><span class="feature-icon" aria-hidden="true">▤</span><span>Đọc hôm nay.<br><strong>Khám phá ngày mai.</strong></span></div></aside>
+<section class="card auth-card"><span class="status-pill">{{ admin ? 'Quản trị viên' : 'Tài khoản khách hàng' }}</span><h2>{{ admin ? 'Đăng nhập Admin' : 'Đăng nhập' }}</h2><p class="muted">Nhập thông tin tài khoản của bạn để tiếp tục.</p>
+{% if error %}<div class="error" role="alert">Không thể đăng nhập. Vui lòng kiểm tra thông tin hoặc thử lại sau.</div>{% endif %}
+<form method="post" data-turbo="false"><input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+<label for="login">{{ admin ? 'Tên đăng nhập Admin' : 'Email' }}</label><input id="login" name="_username" type="{{ admin ? 'text' : 'email' }}" autocomplete="username" maxlength="150" placeholder="{{ admin ? 'Tên tài khoản quản trị' : 'Email của bạn' }}" required>
+<label for="password">Mật khẩu</label><div class="password-row"><input id="password" name="_password" type="password" autocomplete="current-password" placeholder="Nhập mật khẩu" required><button type="button" data-toggle-password="password" aria-pressed="false">Hiện</button></div>
+<button class="primary">Đăng nhập</button></form>
+{% if not admin %}<p class="auth-bottom">Chưa có tài khoản? <a href="{{ path('app_register') }}">Đăng ký ngay</a></p>{% endif %}<a class="secondary-link" href="{{ path(admin ? 'app_login' : 'app_admin_login') }}">{{ admin ? '← Đăng nhập khách hàng' : 'Dành cho quản trị viên →' }}</a></section></div>{% endblock %}

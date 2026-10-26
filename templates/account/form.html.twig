@@ -1,0 +1,7 @@
+{% extends 'account/layout.html.twig' %}
+{% block title %}{{ title }} · Nhà sách Nhóm 04{% endblock %}
+{% block content %}<div class="account-form-layout"><div class="form-intro"><p class="eyebrow">{{ app.user ? 'KHÔNG GIAN CỦA BẠN' : 'GIA NHẬP NHÀ SÁCH NHÓM 04' }}</p><h1>{{ title }}</h1><p>{{ app.user ? 'Chăm sóc tài khoản để hành trình đọc sách luôn liền mạch.' : 'Tạo tài khoản để bắt đầu hành trình cùng những trang sách.' }}</p>{% if app.user %}<nav class="profile-tabs" aria-label="Cài đặt tài khoản"><a class="{{ current == 'app_profile' ? 'active' : '' }}" href="{{ path('app_profile') }}">Thông tin cá nhân</a><a class="{{ current == 'app_password' ? 'active' : '' }}" href="{{ path('app_password') }}">Đổi mật khẩu</a></nav>{% endif %}</div><section class="card form-card">
+{% if email is defined %}<div class="profile-summary"><span class="avatar" aria-hidden="true">TV</span><div><strong>{{ app.user.profile.THANH_VIEN_HO_TEN }}</strong><p>{{ email }}</p><small>Mã thành viên: {{ app.user.id }}</small></div></div>{% endif %}
+{% if current == 'app_password' %}<div class="info-note">Sử dụng mật khẩu từ 8 ký tự. Bạn sẽ đăng nhập lại sau khi đổi thành công.</div>{% endif %}
+{{ form_start(form, {attr: {'data-turbo':'false', 'class':'account-form'}}) }}{{ form_widget(form) }}<button class="primary">{{ button }}</button>{{ form_end(form) }}
+{% if not app.user %}<p class="auth-bottom">Đã có tài khoản? <a href="{{ path('app_login') }}">Quay lại đăng nhập</a></p>{% endif %}</section></div>{% endblock %}
