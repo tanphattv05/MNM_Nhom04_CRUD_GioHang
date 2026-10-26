@@ -14,6 +14,7 @@ final class CartRepository
         WHERE m.GIO_HANG_ID_GIO = g.GIO_HANG_ID_GIO) totals ";
     private const JOINS = ' LEFT JOIN dbo.THANH_VIEN t ON t.THANH_VIEN_TEN_DANG_NHAP = g.THANH_VIEN_TEN_DANG_NHAP
         LEFT JOIN dbo.QTV q ON q.QTV_USER_ADMIN = g.QTV_USER_ADMIN ';
+    // g.* includes the independent customer note and nullable Admin rejection reason.
     private const FIELDS = 'g.*, t.THANH_VIEN_HO_TEN, q.QTV_HO_TEN, totals.line_count,
         CASE WHEN totals.missing_price > 0 THEN NULL ELSE COALESCE(totals.total, 0) END AS current_total';
 
@@ -51,6 +52,7 @@ final class CartRepository
         if ($owner !== null) { $params[] = $owner; }
         $cart = $this->db->fetchAssociative('SELECT '.self::FIELDS.' FROM dbo.GIO_HANG g'.self::JOINS.self::TOTALS.' WHERE g.GIO_HANG_ID_GIO = ?'.($owner !== null ? ' AND g.THANH_VIEN_TEN_DANG_NHAP = ?' : ''), $params);
         if (!$cart) { return null; }
+        $cart['GIO_HANG_LY_DO_TU_CHOI'] = $cart['GIO_HANG_LY_DO_TU_CHOI'] ?? null;
         $lines = $this->db->fetchAllAssociative('SELECT m.SACH_ID_SACH, m.MUA_SO_LUONG_MUA, s.SACH_TEN_SACH, s.SACH_GIA_BAN,
             CAST(s.SACH_GIA_BAN AS decimal(28,2)) * m.MUA_SO_LUONG_MUA AS subtotal
             FROM dbo.MUA m LEFT JOIN dbo.SACH s ON s.SACH_ID_SACH = m.SACH_ID_SACH WHERE m.GIO_HANG_ID_GIO = ? ORDER BY m.SACH_ID_SACH, m.THANH_VIEN_TEN_DANG_NHAP', [$id]);

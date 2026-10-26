@@ -125,16 +125,12 @@ final class CartService
             throw new \DomainException('Lý do từ chối bắt buộc nhập và tối đa 255 ký tự.');
         }
         $this->db->transactional(function () use ($admin, $id, $action, $reason): void {
-            $cart = $this->db->fetchAssociative('SELECT GIO_HANG_TRANG_THAI, GIO_HANG_GHI_CHU FROM dbo.GIO_HANG WITH (UPDLOCK, HOLDLOCK) WHERE GIO_HANG_ID_GIO = ?', [$id]);
+            $cart = $this->db->fetchAssociative('SELECT GIO_HANG_TRANG_THAI FROM dbo.GIO_HANG WITH (UPDLOCK, HOLDLOCK) WHERE GIO_HANG_ID_GIO = ?', [$id]);
             if (!$cart) { throw new \DomainException('Không tìm thấy giỏ hàng.'); }
             if ($cart['GIO_HANG_TRANG_THAI'] !== 'Chờ duyệt') {
                 throw new \DomainException('Giỏ đã được xử lý hoặc không ở trạng thái Chờ duyệt.');
             }
-            $note = $cart['GIO_HANG_GHI_CHU'];
-            if ($action === 'reject') {
-                // Existing schema has one note field; rejected carts display it as the reason.
-                $note = $reason;
-            } else {
+            if ($action === 'approve') {
                 $lines = $this->db->fetchAllAssociative('SELECT SACH_ID_SACH, MUA_SO_LUONG_MUA FROM dbo.MUA WITH (UPDLOCK, HOLDLOCK) WHERE GIO_HANG_ID_GIO = ? ORDER BY SACH_ID_SACH', [$id]);
                 if (!$lines) { throw new \DomainException('Không thể duyệt giỏ hàng rỗng.'); }
                 // Aggregate legacy duplicate lines so stock is checked against the full quantity.
@@ -152,7 +148,7 @@ final class CartService
                     if ($changed !== 1) { throw new \DomainException('Tồn kho đã thay đổi. Vui lòng thử lại.'); }
                 }
             }
-            $changed = $this->db->executeStatement('UPDATE dbo.GIO_HANG SET GIO_HANG_TRANG_THAI = ?, QTV_USER_ADMIN = ?, GIO_HANG_GHI_CHU = ? WHERE GIO_HANG_ID_GIO = ? AND GIO_HANG_TRANG_THAI = ?', [$action === 'approve' ? 'Đã duyệt' : 'Từ chối', $admin->id, $note, $id, 'Chờ duyệt']);
+            $changed = $this->db->executeStatement('UPDATE dbo.GIO_HANG SET GIO_HANG_TRANG_THAI = ?, QTV_USER_ADMIN = ?, GIO_HANG_LY_DO_TU_CHOI = ? WHERE GIO_HANG_ID_GIO = ? AND GIO_HANG_TRANG_THAI = ?', [$action === 'approve' ? 'Đã duyệt' : 'Từ chối', $admin->id, $action === 'reject' ? $reason : null, $id, 'Chờ duyệt']);
             if ($changed !== 1) { throw new \DomainException('Giỏ đã thay đổi. Vui lòng tải lại trang.'); }
         });
     }
