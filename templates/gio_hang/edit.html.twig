@@ -1,0 +1,24 @@
+{% extends 'account/layout.html.twig' %}
+{% block title %}Sửa giỏ #{{ cart.GIO_HANG_ID_GIO }} · Nhà sách Nhóm 04{% endblock %}
+{% block stylesheets %}{{ parent() }}<link rel="stylesheet" href="{{ asset('styles/shop.css') }}">{% endblock %}
+{% block content %}
+<div class="page-heading"><h1>Sửa giỏ #{{ cart.GIO_HANG_ID_GIO }}</h1><a href="{{ path('app_cart_detail', {id:cart.GIO_HANG_ID_GIO}) }}">← Chi tiết giỏ</a></div>
+<p><span class="status-pill">Chờ duyệt</span> Giá được tính theo giá sách hiện tại. Giỏ phải có ít nhất một sách.</p>
+{% if error %}<div class="notice" role="alert">{{ error }}</div>{% endif %}
+<form method="get" class="card read-filters" action="{{ path('app_cart_edit', {id:cart.GIO_HANG_ID_GIO}) }}">
+<div><label for="book-search">Tìm sách để thêm</label><input id="book-search" name="q" value="{{ q }}" maxlength="120"></div><button class="button">Tìm sách</button>
+<p>Tìm kiếm tải lại trang. Hãy lưu các thay đổi đang nhập trước khi tìm hoặc chuyển trang.</p>
+</form>
+{# Server validates quantities after removing checked lines, even when their old input is invalid. #}
+<form method="post" action="{{ path('app_cart_edit', {id:cart.GIO_HANG_ID_GIO, q:q, page:page}) }}" data-turbo="false" novalidate>
+<input type="hidden" name="_token" value="{{ csrf_token('cart_edit_' ~ cart.GIO_HANG_ID_GIO) }}">
+<section class="card read-table"><table><thead><tr><th>Sách</th><th>Giá hiện tại</th><th>Số lượng</th><th>Bỏ sách</th></tr></thead><tbody>
+{% for line in lines %}<tr><td>{{ line.book ? line.book.SACH_TEN_SACH : 'Sách không còn tồn tại' }} (#{{ line.id }})</td><td>{{ line.book and line.book.SACH_GIA_BAN is not null ? line.book.SACH_GIA_BAN|vnd : 'Chưa có giá' }}</td><td><label for="quantity-{{ line.id }}">Số lượng (tồn: {{ line.book ? line.book.SACH_SO_LUONG : 0 }})</label><input id="quantity-{{ line.id }}" type="number" min="1" step="1" name="items[{{ line.id }}]" value="{{ line.quantity }}"></td><td><label><input type="checkbox" name="remove[{{ line.id }}]" value="1"> Bỏ</label></td></tr>
+{% else %}<tr><td colspan="4">Giỏ đang trống. Hãy thêm sách trước khi lưu.</td></tr>{% endfor %}
+</tbody></table></section>
+<section class="card history-card read-filters"><h2>Thêm sách</h2><label for="new-book">Sách trong kết quả tìm kiếm ({{ total }} sách)</label><select id="new-book" name="new_book"><option value="">Không thêm sách</option>{% for book in books %}<option value="{{ book.SACH_ID_SACH }}">{{ book.SACH_TEN_SACH }} — {{ book.SACH_GIA_BAN is null ? 'Chưa có giá' : book.SACH_GIA_BAN|vnd }} — Tồn: {{ book.SACH_SO_LUONG }}</option>{% endfor %}</select>
+<label for="new-quantity">Số lượng thêm (sách đã có sẽ được cộng số lượng)</label><input id="new-quantity" type="number" min="1" step="1" name="new_quantity" value="1">
+<nav class="pagination" aria-label="Phân trang sách">{% if page > 1 %}<a href="{{ path('app_cart_edit', {id:cart.GIO_HANG_ID_GIO,q:q,page:page-1}) }}">← Trước</a>{% endif %}<span>Trang {{ page }} / {{ pages }}</span>{% if page < pages %}<a href="{{ path('app_cart_edit', {id:cart.GIO_HANG_ID_GIO,q:q,page:page+1}) }}">Sau →</a>{% endif %}</nav>
+<label for="cart-note">Ghi chú</label><textarea id="cart-note" name="note" maxlength="255" rows="3">{{ note }}</textarea>
+<button class="button" type="submit">Lưu thay đổi</button></section></form>
+{% endblock %}

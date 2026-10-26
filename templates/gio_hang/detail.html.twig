@@ -13,4 +13,6 @@
 {% for line in lines %}<tr><td>{{ line.SACH_TEN_SACH ?: 'Sách chưa có thông tin' }} (#{{ line.SACH_ID_SACH }})</td><td>{{ line.MUA_SO_LUONG_MUA }}</td><td>{{ line.SACH_GIA_BAN is null ? 'Chưa có giá' : line.SACH_GIA_BAN|vnd }}</td><td>{{ line.subtotal is null ? 'Chưa đủ dữ liệu giá' : line.subtotal|vnd }}</td></tr>
 {% else %}<tr><td colspan="4">Giỏ hàng trống, chưa có sách.</td></tr>{% endfor %}
 </tbody></table></section><div class="summary-row grand-total"><span>Tổng theo giá hiện tại</span><strong>{{ cart.current_total is null ? 'Chưa đủ dữ liệu giá' : cart.current_total|vnd }}</strong></div>
+
+{% if not admin and cart.GIO_HANG_TRANG_THAI == 'Chờ duyệt' %}<a class="button button-small" href="{{ path('app_cart_edit', {id:cart.GIO_HANG_ID_GIO}) }}">Sửa giỏ hàng</a>{% endif %}
 {% endblock %}

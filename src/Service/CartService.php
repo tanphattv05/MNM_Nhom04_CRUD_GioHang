@@ -77,4 +77,42 @@ final class CartService
         $this->requests->getSession()->remove($this->key($user));
         return $id;
     }
+
+    /** Update a submitted cart without changing its status, timestamp or stock. */
+    public function updateSubmitted(Account $user, int $id, array $items, string $note): void
+    {
+        if ($user->admin) { throw new \DomainException('Chỉ khách hàng được sửa giỏ của mình.'); }
+        if (!$items) { throw new \DomainException('Không thể lưu giỏ hàng rỗng.'); }
+        if (count($items) > 100) { throw new \DomainException('Mỗi giỏ tối đa 100 đầu sách.'); }
+        if (mb_strlen($note) > 255) { throw new \DomainException('Ghi chú tối đa 255 ký tự.'); }
+        $validated = [];
+        foreach ($items as $bookId => $quantity) {
+            if (!preg_match('/^[1-9][0-9]{0,9}$/D', (string)$bookId) || (int)$bookId > 2147483647) {
+                throw new \DomainException('Mã sách không hợp lệ.');
+            }
+            $bookId = (int)$bookId;
+            if (!is_string($quantity)) { throw new \DomainException('Số lượng không hợp lệ.'); }
+            $validated[$bookId] = self::quantity($quantity);
+        }
+        ksort($validated);
+        $this->db->transactional(function () use ($user, $id, $validated, $note): void {
+            // SQL Server update/range locks last until commit. Future Admin writes
+            // must acquire this same cart lock before changing status or lines.
+            $cart = $this->db->fetchAssociative('SELECT THANH_VIEN_TEN_DANG_NHAP, GIO_HANG_TRANG_THAI FROM dbo.GIO_HANG WITH (UPDLOCK, HOLDLOCK) WHERE GIO_HANG_ID_GIO = ?', [$id]);
+            if (!$cart || (string)$cart['THANH_VIEN_TEN_DANG_NHAP'] !== $user->id) {
+                throw new \DomainException('Không tìm thấy giỏ hàng của bạn.');
+            }
+            if ($cart['GIO_HANG_TRANG_THAI'] !== 'Chờ duyệt') {
+                throw new \DomainException('Chỉ được sửa giỏ hàng ở trạng thái Chờ duyệt. Vui lòng tải lại trang.');
+            }
+            foreach ($validated as $bookId => $quantity) {
+                $this->validate($this->books->find($bookId, true), $quantity);
+            }
+            $this->db->executeStatement('DELETE FROM dbo.MUA WHERE GIO_HANG_ID_GIO = ?', [$id]);
+            foreach ($validated as $bookId => $quantity) {
+                $this->db->insert('dbo.MUA', ['THANH_VIEN_TEN_DANG_NHAP'=>(int)$user->id, 'SACH_ID_SACH'=>$bookId, 'GIO_HANG_ID_GIO'=>$id, 'MUA_SO_LUONG_MUA'=>$quantity]);
+            }
+            $this->db->executeStatement('UPDATE dbo.GIO_HANG SET GIO_HANG_GHI_CHU = ? WHERE GIO_HANG_ID_GIO = ?', [$note === '' ? null : $note, $id]);
+        });
+    }
 }

@@ -15,7 +15,9 @@
 <p>Thời gian gửi: {{ cart.GIO_HANG_THOI_GIAN ? cart.GIO_HANG_THOI_GIAN|date('d/m/Y H:i') : 'Chưa có' }}</p>
 {% if admin %}<p>Khách hàng: {{ cart.THANH_VIEN_HO_TEN ?: 'Chưa có tên' }} ({{ cart.THANH_VIEN_TEN_DANG_NHAP ?? 'Chưa xác định' }})</p>{% endif %}
 <p>{{ cart.line_count }} dòng sách</p><p>Tổng theo giá hiện tại: <strong>{{ cart.current_total is null ? 'Chưa đủ dữ liệu giá' : cart.current_total|vnd }}</strong></p>
-<a class="text-link" href="{{ path(admin ? 'app_admin_cart_detail' : 'app_cart_detail', {id: cart.GIO_HANG_ID_GIO}) }}">Xem chi tiết →</a></article>
+<a class="text-link" href="{{ path(admin ? 'app_admin_cart_detail' : 'app_cart_detail', {id: cart.GIO_HANG_ID_GIO}) }}">Xem chi tiết →</a>
+{% if not admin and cart.GIO_HANG_TRANG_THAI == 'Chờ duyệt' %}<a class="button button-small" href="{{ path('app_cart_edit', {id:cart.GIO_HANG_ID_GIO}) }}">Sửa giỏ hàng</a>{% endif %}
+</article>
 {% else %}<section class="card empty-state"><h2>Không có giỏ hàng phù hợp</h2></section>{% endfor %}</div>
 <nav class="pagination" aria-label="Phân trang giỏ hàng">
 {% if page > 1 %}<a href="{{ path(list_route, {q:q, status:status, page:page-1}) }}">← Trước</a>{% endif %}
