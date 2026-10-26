@@ -24,6 +24,8 @@ function loginAs(App\Security\Account $user): void {
 }
 $repo = new App\Repository\CartRepository($db);
 $accounts = new App\Repository\AccountRepository($db);
+$client->request('GET', '/'); check($client->getResponse()->isSuccessful(), 'Website root renders home');
+$client->request('GET', '/home'); check($client->getResponse()->isSuccessful(), 'Existing home URL retained');
 $userId = (string)$db->fetchOne('SELECT TOP 1 THANH_VIEN_TEN_DANG_NHAP FROM dbo.THANH_VIEN ORDER BY THANH_VIEN_TEN_DANG_NHAP');
 $adminId = (string)$db->fetchOne('SELECT TOP 1 QTV_USER_ADMIN FROM dbo.QTV');
 $client->request('GET', '/gio-hang/lich-su'); check($client->getResponse()->isRedirect('/dang-nhap'), 'Anonymous history blocked');
@@ -36,7 +38,8 @@ $own = $repo->search($userId, '', '', 1);
 check($own['total'] === (int)$db->fetchOne('SELECT COUNT(*) FROM dbo.GIO_HANG WHERE THANH_VIEN_TEN_DANG_NHAP = ?', [$userId]), 'Owner scoped count');
 foreach ($own['carts'] as $cart) {
     check((string)$cart['THANH_VIEN_TEN_DANG_NHAP'] === $userId, 'Owner scoped row');
-    $client->request('GET', '/gio-hang/lich-su/'.$cart['GIO_HANG_ID_GIO']); check($client->getResponse()->isSuccessful(), 'Own detail rendered');
+    $detailPage = $client->request('GET', '/gio-hang/lich-su/'.$cart['GIO_HANG_ID_GIO']); check($client->getResponse()->isSuccessful(), 'Own detail rendered');
+    check($detailPage->filter('.customer-nav a[href="/gio-hang/lich-su"].active[aria-current="page"]')->count() === 1, 'History navigation active on detail');
 }
 $other = $db->fetchOne('SELECT TOP 1 GIO_HANG_ID_GIO FROM dbo.GIO_HANG WHERE THANH_VIEN_TEN_DANG_NHAP <> ? OR THANH_VIEN_TEN_DANG_NHAP IS NULL', [$userId]);
 check($other !== false, 'Foreign cart fixture exists');
