@@ -1,0 +1,24 @@
+{% extends 'account/layout.html.twig' %}
+{% block title %}{{ admin ? 'Quản lý giỏ hàng' : 'Lịch sử giỏ đã gửi' }} · Nhà sách Nhóm 04{% endblock %}
+{% block stylesheets %}{{ parent() }}<link rel="stylesheet" href="{{ asset('styles/shop.css') }}">{% endblock %}
+{% block content %}
+{% set list_route = admin ? 'app_admin_carts' : 'app_cart_history' %}
+<div class="page-heading"><h1>{{ admin ? 'Quản lý giỏ hàng' : 'Lịch sử giỏ đã gửi' }}</h1>{% if not admin %}<a href="{{ path('app_my_cart') }}">Giỏ hàng đang chọn →</a>{% endif %}</div>
+<form method="get" class="card read-filters" action="{{ path(list_route) }}">
+{% if admin %}<div><label for="cart-search">Mã giỏ / tên hoặc mã khách hàng</label><input id="cart-search" name="q" maxlength="120" value="{{ q }}"></div>{% endif %}
+<div><label for="cart-status">Trạng thái</label><select id="cart-status" name="status"><option value="">Tất cả trạng thái</option><option value="__null" {{ status == '__null' ? 'selected' : '' }}>Chưa có trạng thái</option>{% for value in statuses %}<option value="{{ value }}" {{ status == value ? 'selected' : '' }}>{{ value ?: 'Trạng thái trống' }}</option>{% endfor %}</select></div>
+<button class="button">Lọc giỏ hàng</button><a href="{{ path(list_route) }}">Xóa bộ lọc</a></form>
+<p>{{ total }} giỏ hàng. Tổng tiền được tính theo giá sách hiện tại, không phải giá tại thời điểm gửi.</p>
+<div class="history-grid">
+{% for cart in carts %}<article class="card history-card"><h2><a href="{{ path(admin ? 'app_admin_cart_detail' : 'app_cart_detail', {id: cart.GIO_HANG_ID_GIO}) }}">Giỏ #{{ cart.GIO_HANG_ID_GIO }}</a></h2>
+<span class="status-pill">{{ cart.GIO_HANG_TRANG_THAI ?: 'Chưa có trạng thái' }}</span>
+<p>Thời gian gửi: {{ cart.GIO_HANG_THOI_GIAN ? cart.GIO_HANG_THOI_GIAN|date('d/m/Y H:i') : 'Chưa có' }}</p>
+{% if admin %}<p>Khách hàng: {{ cart.THANH_VIEN_HO_TEN ?: 'Chưa có tên' }} ({{ cart.THANH_VIEN_TEN_DANG_NHAP ?? 'Chưa xác định' }})</p>{% endif %}
+<p>{{ cart.line_count }} dòng sách</p><p>Tổng theo giá hiện tại: <strong>{{ cart.current_total is null ? 'Chưa đủ dữ liệu giá' : cart.current_total|vnd }}</strong></p>
+<a class="text-link" href="{{ path(admin ? 'app_admin_cart_detail' : 'app_cart_detail', {id: cart.GIO_HANG_ID_GIO}) }}">Xem chi tiết →</a></article>
+{% else %}<section class="card empty-state"><h2>Không có giỏ hàng phù hợp</h2></section>{% endfor %}</div>
+<nav class="pagination" aria-label="Phân trang giỏ hàng">
+{% if page > 1 %}<a href="{{ path(list_route, {q:q, status:status, page:page-1}) }}">← Trước</a>{% endif %}
+<span aria-current="page">Trang {{ page }} / {{ pages }}</span>
+{% if page < pages %}<a href="{{ path(list_route, {q:q, status:status, page:page+1}) }}">Sau →</a>{% endif %}</nav>
+{% endblock %}

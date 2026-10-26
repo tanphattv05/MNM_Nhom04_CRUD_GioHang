@@ -2,7 +2,7 @@
 {% block content %}
 {% if admin %}
 <div class="page-heading"><div><p class="eyebrow">TỔNG QUAN</p><h1>{{ current == 'app_admin_carts' ? 'Quản lý giỏ hàng' : 'Dashboard quản trị' }}</h1><p>Chào {{ app.user.profile.QTV_HO_TEN|default(app.user.id) }}, chúc bạn một ngày làm việc hiệu quả.</p></div><span class="status-pill">Khu vực Admin</span></div>
-<section class="card empty-state"><span class="feature-icon" aria-hidden="true">▤</span><h2>Sẵn sàng cho bước tiếp theo</h2><p>Chức năng quản lý và duyệt giỏ hàng sẽ được triển khai ở giai đoạn tiếp theo.</p><span class="status-pill neutral">Chưa mở tính năng</span></section>
+<section class="card empty-state"><h2>{{ pending_count }} giỏ chờ duyệt</h2><a class="button" href="{{ path('app_admin_carts', {status:'Chờ duyệt'}) }}">Xem giỏ chờ duyệt</a></section>
 {% elseif current == 'app_customer_home' %}
 <section class="hero"><div class="hero-copy"><p class="eyebrow">KHÔNG GIAN DÀNH CHO NGƯỜI YÊU SÁCH</p><h1>Mở một trang sách.<br>Mở cả thế giới.</h1><p>Xin chào <strong>{{ app.user.profile.THANH_VIEN_HO_TEN }}</strong>. Chào mừng bạn trở lại với Nhà sách Nhóm 04.</p><a class="button" href="{{ path('app_catalog') }}">Khám phá sách <span aria-hidden="true">→</span></a></div><div class="book-illustration" aria-hidden="true"><span class="book book-one">KHÁM PHÁ</span><span class="book book-two">TRI THỨC</span><span class="book book-three">CẢM HỨNG</span><div class="book-shelf"></div><span class="art-caption">YOUR NEXT CHAPTER</span></div></section>
 <div class="section-heading"><h2>Góc nhỏ của bạn</h2><p>Mọi thứ bạn cần, trong một không gian.</p></div>

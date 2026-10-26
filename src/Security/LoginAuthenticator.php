@@ -14,13 +14,13 @@ use Symfony\Component\Security\Http\Authenticator\Passport\Credentials\PasswordC
 final class LoginAuthenticator extends AbstractLoginFormAuthenticator
 {
     public function __construct(private AccountRepository $accounts, private UrlGeneratorInterface $urls) {}
-    public function supports(Request $request): bool { return $request->isMethod('POST') && in_array($request->attributes->get('_route'), ['app_login','app_admin_login'], true); }
+    public function supports(Request $request): bool { return $request->isMethod('POST') && $request->attributes->get('_route') === 'app_login'; }
     public function authenticate(Request $request): Passport
     {
-        $admin = $request->attributes->get('_route') === 'app_admin_login';
         $login = substr(trim($request->request->getString('_username')), 0, 150);
-        return new Passport(new UserBadge(($admin ? 'admin:' : 'user:').$login, function () use ($login, $admin) {
-            $user = $this->accounts->byLogin($login, $admin);
+        $login = strtolower($login);
+        return new Passport(new UserBadge('login:'.$login, function () use ($login) {
+            $user = $this->accounts->byUnifiedLogin($login);
             // Legacy plaintext is never accepted by authentication.
             if (!$user || !password_get_info($user->getPassword())['algo']) { throw new UserNotFoundException(); }
             return $user;
@@ -30,5 +30,5 @@ final class LoginAuthenticator extends AbstractLoginFormAuthenticator
     {
         return new RedirectResponse($this->urls->generate(in_array('ROLE_ADMIN', $token->getRoleNames(), true) ? 'app_admin_dashboard' : 'app_customer_home'));
     }
-    protected function getLoginUrl(Request $request): string { return $this->urls->generate(str_starts_with($request->getPathInfo(), '/admin') ? 'app_admin_login' : 'app_login'); }
+    protected function getLoginUrl(Request $request): string { return $this->urls->generate('app_login'); }
 }

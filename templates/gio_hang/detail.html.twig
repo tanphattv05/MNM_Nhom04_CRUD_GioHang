@@ -1,0 +1,16 @@
+{% extends 'account/layout.html.twig' %}
+{% block title %}Giỏ #{{ cart.GIO_HANG_ID_GIO }} · Nhà sách Nhóm 04{% endblock %}
+{% block stylesheets %}{{ parent() }}<link rel="stylesheet" href="{{ asset('styles/shop.css') }}">{% endblock %}
+{% block content %}
+<div class="page-heading"><h1>Giỏ #{{ cart.GIO_HANG_ID_GIO }}</h1><a href="{{ path(admin ? 'app_admin_carts' : 'app_cart_history') }}">← Danh sách giỏ đã gửi</a></div>
+<section class="card history-card"><span class="status-pill">{{ cart.GIO_HANG_TRANG_THAI ?: 'Chưa có trạng thái' }}</span>
+<p>Thời gian gửi: {{ cart.GIO_HANG_THOI_GIAN ? cart.GIO_HANG_THOI_GIAN|date('d/m/Y H:i') : 'Chưa có' }}</p>
+{% if admin %}<p>Khách hàng: {{ cart.THANH_VIEN_HO_TEN ?: 'Chưa có tên' }} ({{ cart.THANH_VIEN_TEN_DANG_NHAP ?? 'Chưa xác định' }})</p>{% endif %}
+<p>Quản trị viên phụ trách: {{ cart.QTV_HO_TEN ?: (cart.QTV_USER_ADMIN ?? 'Chưa phân công') }}</p>
+<p class="cart-read-note">Ghi chú: {{ cart.GIO_HANG_GHI_CHU ?: 'Không có ghi chú' }}</p></section>
+<p>Giá và tổng tiền dưới đây được tính theo giá sách hiện tại, không phải giá lịch sử tại thời điểm gửi giỏ.</p>
+<section class="card read-table"><table><thead><tr><th scope="col">Sách</th><th scope="col">Số lượng</th><th scope="col">Giá hiện tại</th><th scope="col">Thành tiền hiện tại</th></tr></thead><tbody>
+{% for line in lines %}<tr><td>{{ line.SACH_TEN_SACH ?: 'Sách chưa có thông tin' }} (#{{ line.SACH_ID_SACH }})</td><td>{{ line.MUA_SO_LUONG_MUA }}</td><td>{{ line.SACH_GIA_BAN is null ? 'Chưa có giá' : line.SACH_GIA_BAN|vnd }}</td><td>{{ line.subtotal is null ? 'Chưa đủ dữ liệu giá' : line.subtotal|vnd }}</td></tr>
+{% else %}<tr><td colspan="4">Giỏ hàng trống, chưa có sách.</td></tr>{% endfor %}
+</tbody></table></section><div class="summary-row grand-total"><span>Tổng theo giá hiện tại</span><strong>{{ cart.current_total is null ? 'Chưa đủ dữ liệu giá' : cart.current_total|vnd }}</strong></div>
+{% endblock %}

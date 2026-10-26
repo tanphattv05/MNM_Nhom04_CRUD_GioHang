@@ -9,6 +9,12 @@ final class AccountType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
+        $builder->add('username', TextType::class, ['label'=>'Tên đăng nhập',
+            'help'=>'4–30 ký tự: chữ cái không dấu, số, dấu chấm, gạch dưới hoặc gạch ngang. Không phân biệt hoa thường. Email chỉ dùng để liên hệ.',
+            'constraints'=>[new Assert\NotBlank(message:'Vui lòng nhập tên đăng nhập.'),
+                new Assert\Length(min:4, max:30),
+                new Assert\Regex(pattern:'/^[a-zA-Z0-9_.-]{4,30}$/D', message:'Tên đăng nhập phải gồm 4–30 ký tự chữ không dấu, số, dấu chấm, gạch dưới hoặc gạch ngang.')],
+            'attr'=>['minlength'=>4, 'maxlength'=>30, 'autocomplete'=>'username']]);
         foreach (['name'=>['Họ và tên',120], 'phone'=>['Số điện thoại',20], 'address'=>['Địa chỉ',255]] as $key=>[$label,$max]) {
             $constraints = [new Assert\NotBlank(message:'Vui lòng nhập thông tin.'), new Assert\Length(max:$max)];
             if ($key === 'phone') { $constraints[] = new Assert\Regex(pattern:'/^[+0-9 ().-]{8,20}$/', message:'Số điện thoại không hợp lệ.'); }

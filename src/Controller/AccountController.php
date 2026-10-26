@@ -17,8 +17,9 @@ final class AccountController extends AbstractController
     #[Route('/admin/dang-nhap', name:'app_admin_login', methods:['GET','POST'])]
     public function login(Request $request, AuthenticationUtils $auth): Response
     {
+        if ($request->attributes->get('_route') === 'app_admin_login') { return $this->redirectToRoute('app_login', status: Response::HTTP_SEE_OTHER); }
         if ($this->getUser()) { return $this->redirectToRoute($this->isGranted('ROLE_ADMIN') ? 'app_admin_dashboard' : 'app_customer_home'); }
-        return $this->render('account/login.html.twig',['admin'=>$request->attributes->get('_route') === 'app_admin_login','error'=>$auth->getLastAuthenticationError()]);
+        return $this->render('account/login.html.twig',['error'=>$auth->getLastAuthenticationError()]);
     }
     #[Route('/dang-xuat', name:'app_logout', methods:['POST'])]
     public function logout(): never { throw new \LogicException('Handled by Security.'); }
@@ -32,7 +33,7 @@ final class AccountController extends AbstractController
             try {
                 $accounts->register($data, $hasher->hashPassword(new Account('',false,''), $data['password']));
                 $this->addFlash('success','Đăng ký thành công. Mời bạn đăng nhập.'); return $this->redirectToRoute('app_login');
-            } catch (\DomainException) { $form->get('email')->addError(new FormError('Email đã được sử dụng.')); }
+            } catch (\DomainException $e) { $form->get('username')->addError(new FormError($e->getMessage())); }
             catch (\Doctrine\DBAL\Exception) { $form->addError(new FormError('Chưa thể lưu tài khoản. Vui lòng thử lại sau.')); }
         }
         return $this->render('account/form.html.twig',['form'=>$form,'title'=>'Đăng ký tài khoản','button'=>'Đăng ký']);
@@ -42,9 +43,10 @@ final class AccountController extends AbstractController
     public function profile(Request $request, AccountRepository $accounts): Response
     {
         $user = $this->getUser();
-        $form = $this->createForm(AccountType::class, ['name'=>$user->profile['THANH_VIEN_HO_TEN'], 'phone'=>$user->profile['THANH_VIEN_SO_DIEN_THOAI'], 'address'=>$user->profile['THANH_VIEN_DIA_CHI']]); $form->handleRequest($request);
+        $form = $this->createForm(AccountType::class, ['username'=>$user->profile['THANH_VIEN_USERNAME'], 'name'=>$user->profile['THANH_VIEN_HO_TEN'], 'phone'=>$user->profile['THANH_VIEN_SO_DIEN_THOAI'], 'address'=>$user->profile['THANH_VIEN_DIA_CHI']]); $form->handleRequest($request);
         if ($form->isSubmitted() && $form->isValid()) {
             try { $accounts->updateProfile($user,$form->getData()); $this->addFlash('success','Đã cập nhật hồ sơ.'); return $this->redirectToRoute('app_profile'); }
+            catch (\DomainException $e) { $form->get('username')->addError(new FormError($e->getMessage())); }
             catch (\Doctrine\DBAL\Exception) { $form->addError(new FormError('Chưa thể cập nhật. Vui lòng thử lại sau.')); }
         }
         return $this->render('account/form.html.twig',['form'=>$form,'title'=>'Hồ sơ cá nhân','button'=>'Lưu thông tin','email'=>$user->profile['THANH_VIEN_EMAIL']]);
@@ -66,7 +68,6 @@ final class AccountController extends AbstractController
     #[IsGranted('ROLE_USER')]
     public function home(): Response { return $this->render('account/dashboard.html.twig',['admin'=>false,'section'=>'Chào mừng bạn đến Nhà sách Nhóm 04']); }
     #[Route('/admin/dashboard', name:'app_admin_dashboard', methods:['GET'])]
-    #[Route('/admin/gio-hang', name:'app_admin_carts', methods:['GET'])]
     #[IsGranted('ROLE_ADMIN')]
-    public function admin(): Response { return $this->render('account/dashboard.html.twig',['admin'=>true,'section'=>'Dashboard quản trị']); }
+    public function admin(\App\Repository\CartRepository $carts): Response { return $this->render('account/dashboard.html.twig',['pending_count'=>$carts->pendingCount(),'admin'=>true,'section'=>'Dashboard quản trị']); }
 }

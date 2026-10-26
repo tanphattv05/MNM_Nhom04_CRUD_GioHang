@@ -7,6 +7,7 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\{InputInterface,InputArgument,InputOption};
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
+use Symfony\Component\Console\Question\Question;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\HttpKernel\KernelInterface;
 
@@ -33,13 +34,47 @@ final class AccountPasswordCommand extends Command
             $password = $user->getPassword();
         } else {
             if (!$input->isInteractive()) { $io->error('Cần nhập mật khẩu ẩn trong terminal tương tác.'); return Command::INVALID; }
-            $password = $io->askHidden('Mật khẩu mới (8–72 ký tự)', static function ($value) {
+            $question = new Question('Mật khẩu mới (8–72 ký tự)');
+            $question->setHidden(true)->setHiddenFallback(false);
+            $question->setValidator(static function ($value) {
                 if (!is_string($value) || mb_strlen($value)<8 || strlen($value)>72) { throw new \RuntimeException('Mật khẩu phải có 8–72 ký tự và tối đa 72 byte.'); }
                 return $value;
             });
-            if ($password !== $io->askHidden('Nhập lại mật khẩu mới')) { $io->error('Mật khẩu không trùng khớp.'); return Command::INVALID; }
+            $password = $this->askPassword($io, $question);
+            $confirmation = new Question('Nhập lại mật khẩu mới');
+            $confirmation->setHidden(true)->setHiddenFallback(false);
+            if ($password !== $this->askPassword($io, $confirmation)) { $io->error('Mật khẩu không trùng khớp.'); return Command::INVALID; }
         }
         $this->accounts->changePassword($user,$this->hasher->hashPassword($user,$password));
         $io->success('Đã lưu mật khẩu hash cho một tài khoản.'); return Command::SUCCESS;
+    }
+
+    private function askPassword(SymfonyStyle $io, Question $question): string
+    {
+        if (PHP_OS_FAMILY !== 'Windows') { return $io->askQuestion($question); }
+
+        // Symfony's hiddeninput.exe can hang in Windows terminals. Use the
+        // attached console directly; stdout is a private pipe back to PHP.
+        $io->writeln($question->getQuestion().' (ký tự được che bằng *, Enter để xác nhận)');
+        $executable = (getenv('SystemRoot') ?: 'C:\\Windows').'\\System32\\WindowsPowerShell\\v1.0\\powershell.exe';
+        do {
+            $process = proc_open([
+                $executable, '-NoLogo', '-NoProfile', '-ExecutionPolicy', 'Bypass',
+                '-File', __DIR__.'/../../bin/read-password.ps1',
+            ], [0=>STDIN, 1=>['pipe', 'w'], 2=>STDERR], $pipes, null, null, ['bypass_shell'=>true]);
+            if (!is_resource($process)) { throw new \RuntimeException('Không thể mở trình nhập mật khẩu Windows.'); }
+            $encoded = stream_get_contents($pipes[1]);
+            fclose($pipes[1]);
+            $exit = proc_close($process);
+            $value = base64_decode($encoded, true);
+            if ($exit !== 0 || $value === false) {
+                throw new \RuntimeException('Không thể nhập kín hoặc đã hủy. Hãy chạy lệnh trong Terminal PowerShell tương tác, không chuyển hướng stdin.');
+            }
+            try {
+                return $question->getValidator() ? ($question->getValidator())($value) : $value;
+            } catch (\RuntimeException $e) {
+                $io->error($e->getMessage());
+            }
+        } while (true);
     }
 }

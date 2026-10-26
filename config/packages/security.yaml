@@ -19,6 +19,8 @@ security:
                 path: app_logout
                 target: app_login
                 enable_csrf: true
+                csrf_token_id: logout
+                csrf_parameter: _csrf_token
                 invalidate_session: true
     access_control:
         - { path: ^/admin/dang-nhap$, roles: PUBLIC_ACCESS }

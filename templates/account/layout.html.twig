@@ -12,20 +12,20 @@
     <a class="brand" href="{{ path(app.user ? (is_admin ? 'app_admin_dashboard' : 'app_customer_home') : 'app_home') }}"><span class="brand-mark" aria-hidden="true">▤</span><span>NHÀ SÁCH<strong>Nhóm 04<span class="brand-dot">.</span></strong></span></a>
 {% if not is_admin %}
 <nav class="customer-nav" aria-label="Menu khách hàng">
-    {% for route, label in {'app_customer_home':'Trang chủ','app_catalog':'Danh mục sách','app_my_cart':'Giỏ hàng','app_profile':'Hồ sơ'} %}
+    {% for route, label in {'app_customer_home':'Trang chủ','app_catalog':'Danh mục sách','app_my_cart':'Giỏ hàng','app_cart_history':'Lịch sử giỏ','app_profile':'Hồ sơ'} %}
     <a class="{{ current == route or (route == 'app_profile' and current == 'app_password') ? 'active' : '' }}" {% if current == route %}aria-current="page"{% endif %} href="{{ path(route) }}">{{ label }}</a>
     {% endfor %}
 </nav>
 {% endif %}
-    <div class="header-actions">{% if app.user %}<span class="account-badge">Xin chào, {{ is_admin ? app.user.profile.QTV_HO_TEN : app.user.profile.THANH_VIEN_HO_TEN }}</span><form class="logout-form" action="{{ path('app_logout') }}" method="post" data-turbo="false"><input type="hidden" name="_csrf_token" value="{{ csrf_token('logout') }}"><button class="logout-button">Đăng xuất <span aria-hidden="true">↗</span></button></form>{% else %}<a href="{{ path('app_login') }}">Đăng nhập</a><a class="button button-small" href="{{ path('app_register') }}">Đăng ký</a>{% endif %}</div>
+    <div class="header-actions">{% if app.user %}<span class="account-badge">Xin chào, {{ is_admin ? app.user.profile.QTV_HO_TEN : app.user.profile.THANH_VIEN_HO_TEN }}</span>{% include 'account/_logout.html.twig' %}{% else %}<a href="{{ path('app_login') }}">Đăng nhập</a><a class="button button-small" href="{{ path('app_register') }}">Đăng ký</a>{% endif %}</div>
 </header>
 <div class="page-frame {{ is_admin ? 'admin-frame' : '' }}">
 {% if is_admin %}
 <aside class="admin-sidebar" aria-label="Quản trị">
     <p class="eyebrow">KHÔNG GIAN QUẢN TRỊ</p><h2>Quản lý nhà sách</h2>
-    <nav class="sidebar-nav" aria-label="Menu Admin"><a class="{{ current == 'app_admin_dashboard' ? 'active' : '' }}" href="{{ path('app_admin_dashboard') }}">▦ <span>Dashboard</span></a><a class="{{ current == 'app_admin_carts' ? 'active' : '' }}" href="{{ path('app_admin_carts') }}">▤ <span>Quản lý giỏ hàng</span></a></nav>
+    <nav class="sidebar-nav" aria-label="Menu Admin"><a class="{{ current == 'app_admin_dashboard' ? 'active' : '' }}" href="{{ path('app_admin_dashboard') }}">▦ <span>Dashboard</span></a><a class="{{ current in ['app_admin_carts', 'app_admin_cart_detail'] ? 'active' : '' }}" href="{{ path('app_admin_carts') }}">▤ <span>Quản lý giỏ hàng</span></a></nav>
     <div class="admin-identity"><span class="avatar" aria-hidden="true">QT</span><div><strong>{{ app.user.profile.QTV_HO_TEN|default(app.user.id) }}</strong><small>{{ app.user.id }}</small></div></div>
-    <form action="{{ path('app_logout') }}" method="post" data-turbo="false"><input type="hidden" name="_csrf_token" value="{{ csrf_token('logout') }}"><button class="logout-button">Đăng xuất ↗</button></form>
+    {% include 'account/_logout.html.twig' %}
 </aside>
 {% endif %}
 <main id="main-content" class="main-content">{% for message in app.flashes('success') %}<div class="notice" role="status">{{ message }}</div>{% endfor %}{% block content %}{% endblock %}</main>

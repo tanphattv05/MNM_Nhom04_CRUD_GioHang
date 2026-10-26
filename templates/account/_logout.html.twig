@@ -1,0 +1,4 @@
+<form class="logout-form" action="{{ path('app_logout') }}" method="post" data-turbo="false">
+    <input type="hidden" name="_csrf_token" value="{{ csrf_token('logout') }}">
+    <button type="submit" class="logout-button">Đăng xuất <span aria-hidden="true">↗</span></button>
+</form>
