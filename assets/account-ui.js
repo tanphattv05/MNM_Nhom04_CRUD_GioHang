@@ -8,6 +8,11 @@ function resetLoading() {
     });
 }
 function enhanceUi() {
+    const detailId = new URL(window.location.href).searchParams.get('cart_detail');
+    if (detailId && /^\d+$/.test(detailId)) {
+        const dialog = document.getElementById(`book-detail-${detailId}`);
+        if (dialog && !dialog.open) dialog.showModal();
+    }
     document.querySelectorAll('input[type="number"]').forEach(input => {
         if (!/^(quantity|new_quantity|items\[)/.test(input.name) || input.closest('.quantity-stepper')) return;
         const wrapper = document.createElement('span');
