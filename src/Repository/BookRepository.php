@@ -16,6 +16,7 @@ final class BookRepository
 
     public function find(int $id, bool $lock = false): array|false
     {
+        if ($id < 1 || $id > 2147483647) { return false; }
         return $this->db->fetchAssociative('SELECT * FROM dbo.SACH'.($lock ? ' WITH (HOLDLOCK)' : '').' WHERE SACH_ID_SACH = ?', [$id]);
     }
 

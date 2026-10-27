@@ -13,7 +13,7 @@
 {% if not is_admin %}
 <nav class="customer-nav" aria-label="Menu khách hàng">
     {% for route, label in {'app_customer_home':'Trang chủ','app_catalog':'Danh mục sách','app_my_cart':'Giỏ hàng','app_cart_history':'Lịch sử giỏ','app_profile':'Hồ sơ'} %}
-    {% set active = current == route or (route == 'app_profile' and current == 'app_password') or (route == 'app_cart_history' and current == 'app_cart_detail') %}
+    {% set active = current == route or (route == 'app_profile' and current == 'app_password') or (route == 'app_cart_history' and current in ['app_cart_detail', 'app_cart_edit']) %}
     <a class="{{ active ? 'active' : '' }}" {% if active %}aria-current="page"{% endif %} href="{{ path(route) }}">{{ label }}</a>
     {% endfor %}
 </nav>
