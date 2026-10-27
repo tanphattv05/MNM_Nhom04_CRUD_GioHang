@@ -66,3 +66,42 @@ Truy cập <http://127.0.0.1:8000/home>.
 Ứng dụng có đăng nhập khách hàng/Admin, danh mục sách, tạo giỏ, lịch sử, sửa giỏ Chờ duyệt và Admin duyệt/từ chối giỏ. Chạy `php bin/console doctrine:migrations:migrate` để áp dụng các migration bổ sung trước khi sử dụng.
 
 Giai đoạn 6 đã bổ sung khách hàng hủy giỏ Chờ duyệt và Admin xóa giỏ Đã hủy/Từ chối. Xem [quy định và cách kiểm thử](database/PHASE6_DELETE.md).
+
+## Đăng nhập và chuẩn bị tài khoản demo
+
+Mở <http://127.0.0.1:8000/dang-nhap>. Sau migration username, thành viên mẫu có tên đăng nhập `user_1001` đến `user_1005`; Admin mẫu là `admin`.
+
+SQL khởi tạo lưu mật khẩu mẫu dạng văn bản, trong khi ứng dụng yêu cầu hash. Trên database demo mới tạo, chuyển đúng tài khoản cần thử sang hash bằng các lệnh sau; mật khẩu hiện tại được giữ nguyên:
+
+```powershell
+php bin/console app:account:password admin admin --convert-legacy --apply
+php bin/console app:account:password user 1001 --convert-legacy --apply
+```
+
+| Vai trò | Tên đăng nhập | Mật khẩu trong dữ liệu mẫu |
+|---|---|---|
+| Admin | `admin` | `Demo@2026!` |
+| Khách hàng | `user_1001` | `Demo@2026!` |
+
+Các thông tin này chỉ áp dụng dữ liệu demo chính thức. Tài khoản đã đổi mật khẩu sử dụng mật khẩu hiện tại; lệnh chuyển đổi bỏ qua tài khoản đã hash. Với database có dữ liệu cần giữ, sao lưu trước khi chuyển đổi. Không chạy lại SQL khởi tạo để sửa lỗi đăng nhập vì SQL đó tạo lại các bảng ứng dụng.
+
+Khách hàng cũng có thể tạo tài khoản tại <http://127.0.0.1:8000/dang-ky>; tài khoản đăng ký mới được hash mật khẩu ngay.
+
+## Xử lý lỗi khi chạy trên Windows
+
+| Lỗi | Cách kiểm tra/xử lý |
+|---|---|
+| `could not find driver` | Chạy `php --ri pdo_sqlsrv` và `php --ini`; bật DLL phù hợp phiên bản PHP, TS/NTS và x64/x86 rồi khởi động lại server PHP. |
+| Composer báo thiếu `ext-pdo_sqlsrv` | Cài/bật driver trước, sau đó chạy lại `composer install`. |
+| Thiếu `THANH_VIEN_USERNAME` hoặc `GIO_HANG_LY_DO_TU_CHOI` | Chạy `php bin/console doctrine:migrations:migrate`. |
+| Thiếu asset Stimulus/Turbo | Chạy `php bin/console importmap:install`. |
+| Đúng mật khẩu demo nhưng không đăng nhập được | Kiểm tra tài khoản đã chuyển sang hash chưa và đang dùng username, không dùng email. |
+
+## Kiểm thử giai đoạn 6
+
+```powershell
+php tests/phase6_smoke.php
+php vendor/phpunit/phpunit/phpunit tests/CartDeleteWebTest.php
+```
+
+Xem [kịch bản kiểm thử trên web](database/PHASE6_MANUAL_TESTS.md) và [SQL kiểm tra dữ liệu](database/phase6_delete_checks.sql) để đối chiếu kết quả hủy/xóa với database thật.
