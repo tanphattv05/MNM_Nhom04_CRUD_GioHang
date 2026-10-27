@@ -36,3 +36,14 @@
 @media(max-width:1199px){.header-container{justify-content:normal;grid-template-columns:minmax(0,1fr) auto;gap:14px 24px}.header-brand-search{grid-column:1;grid-row:1}.site-header .header-actions{grid-column:2;grid-row:1;justify-self:end}.site-header .customer-nav{grid-column:1/-1;grid-row:2;gap:22px}.header-search{width:280px;flex-basis:280px}.site-header.is-admin .header-container{grid-template-columns:minmax(0,1fr) auto}}
 @media(max-width:900px){.header-container{grid-template-columns:auto minmax(0,1fr);gap:14px}.header-brand-search{display:contents}.site-header .brand{grid-column:1;grid-row:1}.site-header .header-actions{grid-column:2;grid-row:1;justify-self:end}.header-search{grid-column:1/-1;grid-row:2;width:100%;max-width:none;flex-basis:auto}.site-header .customer-nav{grid-column:1/-1;grid-row:3;flex-wrap:wrap;gap:22px}.site-header.is-admin .header-container{grid-template-columns:auto minmax(0,1fr)}}
 @media(max-width:480px){.site-header{padding:16px}.header-container{gap:12px}.site-header .brand-name{font-size:1.22rem}.site-header .header-actions{flex-wrap:wrap;gap:7px}.site-header .account-menu{max-width:178px}.site-header .customer-nav{gap:20px;justify-content:flex-start}.site-header .customer-nav>a{font-size:.73rem;padding:0;min-height:40px}.header-search input[type=search]:not([type=hidden]){font-size:.8rem}.site-header .account-trigger{padding:4px;gap:6px;font-size:.72rem}}
+
+/* Admin header: two ends of the same centered container, independent of customer navigation. */
+.site-header.is-admin{display:flex;align-items:center;min-height:80px;padding:16px 24px}
+.site-header.is-admin .header-container{display:grid;grid-template-columns:minmax(0,1fr) auto;justify-content:normal;align-items:center;gap:24px;min-height:44px;max-width:1280px;margin-inline:auto}
+.site-header.is-admin .header-brand-search{display:flex;grid-column:1;grid-row:1;justify-self:start;align-items:center;min-width:0}
+.site-header.is-admin .header-actions{grid-column:2;grid-row:1;justify-self:end;justify-content:flex-end;flex-wrap:nowrap;min-width:0;max-width:100%}
+.site-header.is-admin .account-menu{max-width:240px}
+.site-header.is-admin .account-trigger{min-height:44px;align-items:center}
+.site-header.is-admin .account-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:170px}
+.site-header.is-admin .account-chevron{display:grid;place-items:center}
+@media(max-width:480px){.site-header.is-admin{padding-inline:16px}.site-header.is-admin .header-container{gap:12px}.site-header.is-admin .account-menu{max-width:180px}.site-header.is-admin .account-name{max-width:105px}}
