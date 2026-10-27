@@ -63,4 +63,6 @@ php -S 127.0.0.1:8000 -t public public/index.php
 
 Truy cập <http://127.0.0.1:8000/home>.
 
-> Repo hiện chỉ có trang Symfony mẫu. Database đã sẵn sàng, nhưng cần bổ sung Entity, Repository, Controller và template CRUD để giao diện sử dụng sáu bảng trên.
+Ứng dụng có đăng nhập khách hàng/Admin, danh mục sách, tạo giỏ, lịch sử, sửa giỏ Chờ duyệt và Admin duyệt/từ chối giỏ. Chạy `php bin/console doctrine:migrations:migrate` để áp dụng các migration bổ sung trước khi sử dụng.
+
+Giai đoạn 6 đã bổ sung khách hàng hủy giỏ Chờ duyệt và Admin xóa giỏ Đã hủy/Từ chối. Xem [quy định và cách kiểm thử](database/PHASE6_DELETE.md).

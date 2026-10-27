@@ -115,6 +115,40 @@ final class CartService
             $this->db->executeStatement('UPDATE dbo.GIO_HANG SET GIO_HANG_GHI_CHU = ? WHERE GIO_HANG_ID_GIO = ?', [$note === '' ? null : $note, $id]);
         });
     }
+    /** Cancellation retains history and never changes stock (only approval deducts it). */
+    public function cancel(Account $user, int $id): void
+    {
+        if ($user->admin) { throw new \DomainException('Chỉ khách hàng được hủy giỏ của mình.'); }
+        $this->db->transactional(function () use ($user, $id): void {
+            $cart = $this->db->fetchAssociative('SELECT THANH_VIEN_TEN_DANG_NHAP, GIO_HANG_TRANG_THAI FROM dbo.GIO_HANG WITH (UPDLOCK, HOLDLOCK) WHERE GIO_HANG_ID_GIO = ?', [$id]);
+            if (!$cart || (string)$cart['THANH_VIEN_TEN_DANG_NHAP'] !== $user->id) {
+                throw new \DomainException('Không tìm thấy giỏ hàng của bạn.');
+            }
+            if ($cart['GIO_HANG_TRANG_THAI'] !== 'Chờ duyệt') {
+                throw new \DomainException('Chỉ được hủy giỏ hàng ở trạng thái Chờ duyệt. Vui lòng tải lại trang.');
+            }
+            $changed = $this->db->executeStatement('UPDATE dbo.GIO_HANG SET GIO_HANG_TRANG_THAI = ? WHERE GIO_HANG_ID_GIO = ? AND THANH_VIEN_TEN_DANG_NHAP = ? AND GIO_HANG_TRANG_THAI = ?', ['Đã hủy', $id, $user->id, 'Chờ duyệt']);
+            if ($changed !== 1) { throw new \DomainException('Giỏ đã thay đổi. Vui lòng tải lại trang.'); }
+        });
+    }
+
+    /** Delete only inactive, unfulfilled carts; preserve approved stock movements. */
+    public function delete(Account $admin, int $id): void
+    {
+        if (!$admin->admin) { throw new \DomainException('Chỉ Admin được xóa giỏ hàng.'); }
+        $this->db->transactional(function () use ($id): void {
+            $cart = $this->db->fetchAssociative('SELECT GIO_HANG_TRANG_THAI FROM dbo.GIO_HANG WITH (UPDLOCK, HOLDLOCK) WHERE GIO_HANG_ID_GIO = ?', [$id]);
+            if (!$cart) { throw new \DomainException('Không tìm thấy giỏ hàng.'); }
+            if (!in_array($cart['GIO_HANG_TRANG_THAI'], ['Đã hủy', 'Từ chối'], true)) {
+                throw new \DomainException('Chỉ được xóa giỏ hàng Đã hủy hoặc Từ chối. Giỏ chờ duyệt và đã duyệt phải được giữ lại.');
+            }
+            // Delete children first. Any FK/write failure rolls back both statements.
+            $this->db->executeStatement('DELETE FROM dbo.MUA WHERE GIO_HANG_ID_GIO = ?', [$id]);
+            $changed = $this->db->executeStatement('DELETE FROM dbo.GIO_HANG WHERE GIO_HANG_ID_GIO = ? AND GIO_HANG_TRANG_THAI = ?', [$id, $cart['GIO_HANG_TRANG_THAI']]);
+            if ($changed !== 1) { throw new \DomainException('Giỏ đã thay đổi. Vui lòng tải lại trang.'); }
+        });
+    }
+
     /** Lock order: cart, lines, then books in ascending ID order. */
     public function review(Account $admin, int $id, string $action, string $reason = ''): void
     {

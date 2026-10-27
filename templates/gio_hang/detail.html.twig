@@ -32,4 +32,26 @@
 </form>
 </section>
 {% endif %}
+{% if not admin and cart.GIO_HANG_TRANG_THAI == 'Chờ duyệt' %}
+<section class="card history-card">
+<h2>Hủy giỏ hàng</h2>
+<p>Giỏ đã hủy không thể sửa hoặc gửi duyệt lại. Lịch sử và chi tiết giỏ vẫn được lưu.</p>
+<form method="post" action="{{ path('app_cart_cancel', {id:cart.GIO_HANG_ID_GIO}) }}" data-turbo="false">
+<input type="hidden" name="_token" value="{{ csrf_token('cart_cancel_' ~ cart.GIO_HANG_ID_GIO) }}">
+<label><input type="checkbox" required> Tôi xác nhận hủy giỏ #{{ cart.GIO_HANG_ID_GIO }}.</label>
+<button class="button" type="submit">Hủy giỏ hàng</button>
+</form></section>
+{% endif %}
+{% if admin %}
+<section class="card history-card"><h2>Xóa giỏ hàng</h2>
+{% if cart.GIO_HANG_TRANG_THAI in ['Đã hủy', 'Từ chối'] %}
+<p>Xóa vĩnh viễn giỏ #{{ cart.GIO_HANG_ID_GIO }} và toàn bộ dòng sách liên quan. Không thể khôi phục.</p>
+<form method="post" action="{{ path('app_admin_cart_delete', {id:cart.GIO_HANG_ID_GIO}) }}" data-turbo="false">
+<input type="hidden" name="_token" value="{{ csrf_token('cart_delete_' ~ cart.GIO_HANG_ID_GIO) }}">
+<label><input type="checkbox" required> Tôi xác nhận xóa vĩnh viễn giỏ #{{ cart.GIO_HANG_ID_GIO }}.</label>
+<button class="button" type="submit">Xóa vĩnh viễn</button>
+</form>
+{% else %}<p>Chỉ được xóa giỏ Đã hủy hoặc Từ chối. Giỏ chờ duyệt và đã duyệt phải được giữ lại.</p>{% endif %}
+</section>
+{% endif %}
 {% endblock %}
