@@ -30,3 +30,9 @@ php bin/console debug:router
 Smoke test độc lập kiểm tra quyền, chủ sở hữu, các trạng thái bị chặn, giỏ không tồn tại, hủy lặp, chặn sửa/duyệt sau hủy, thứ tự xóa khóa ngoại và hoàn tác khi lỗi. Test không kết nối database thật. Khi kiểm thử thủ công, dùng giỏ thử nghiệm vì thao tác Admin xóa là vĩnh viễn.
 
 `CartDeleteWebTest` chạy qua Symfony với kết nối DBAL giả lập để kiểm tra biểu mẫu Twig, phân quyền, giỏ của người khác, CSRF, POST-only, chuyển hướng, thay đổi trạng thái sau khi mở biểu mẫu và hiển thị lỗi database. Cần chạy `composer install` (bao gồm `importmap:install`) trước khi chạy bộ PHPUnit. Kiểm thử này không xác nhận hành vi khóa hoặc khóa ngoại trên SQL Server thật.
+
+## Kiểm thử và đối chiếu trên database thật
+
+- [Kịch bản kiểm thử thủ công](PHASE6_MANUAL_TESTS.md): các bước khách hủy, Admin xóa, kiểm tra quyền, trạng thái và biểu mẫu cũ.
+- [SQL kiểm tra chỉ đọc](phase6_delete_checks.sql): xem trạng thái, chi tiết giỏ, dòng mồ côi, khóa ngoại và tồn kho từng sách.
+- Điền `@CartId` trong file SQL để đối chiếu một giỏ trước/sau. Script không tự hủy hoặc xóa dữ liệu và không tự kết luận mọi quy tắc nghiệp vụ đã đạt.
