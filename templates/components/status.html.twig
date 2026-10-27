@@ -1,0 +1,2 @@
+{% set status_class = {'Chờ duyệt':'status-pending','Đã duyệt':'status-approved','Từ chối':'status-rejected','Đã hủy':'status-cancelled'}[state|default('')] ?? 'neutral' %}
+<span class="status-pill {{ status_class }}">{{ state ?: 'Chưa có trạng thái' }}</span>

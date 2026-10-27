@@ -1,4 +1,16 @@
-<?php
+Tiếp tục đúng bước còn dang dở của việc chuẩn hóa SQL Server.
+
+File `BanSachDB_Full.sql` đã import thành công vào database thử riêng. Không tạo lại hoặc sửa nội dung đã đạt.
+
+Chỉ kiểm tra trạng thái Doctrine Migrations trên database thử, xác nhận không chạy trùng hai migration đã tích hợp trong schema và kiểm tra `README_DATABASE.md` hướng dẫn đúng hai phương án cài đặt.
+
+Không tác động `BanSachDB` thật, không xóa database thử, không commit. Báo cáo ngắn kết quả và vấn đề còn lại.Tiếp tục đúng bước còn dang dở của việc chuẩn hóa SQL Server.
+
+File `BanSachDB_Full.sql` đã import thành công vào database thử riêng. Không tạo lại hoặc sửa nội dung đã đạt.
+
+Chỉ kiểm tra trạng thái Doctrine Migrations trên database thử, xác nhận không chạy trùng hai migration đã tích hợp trong schema và kiểm tra `README_DATABASE.md` hướng dẫn đúng hai phương án cài đặt.
+
+Không tác động `BanSachDB` thật, không xóa database thử, không commit. Báo cáo ngắn kết quả và vấn đề còn lại.<?php
 ob_start();
 require dirname(__DIR__).'/vendor/autoload.php';
 (new Symfony\Component\Dotenv\Dotenv())->bootEnv(dirname(__DIR__).'/.env');
@@ -72,6 +84,9 @@ $twig = new Twig\Environment(new Twig\Loader\ChainLoader([
 ]), ['autoescape'=>'html', 'strict_variables'=>true]);
 $twig->addFunction(new Twig\TwigFunction('path', static fn(string $route, array $params = []): string => '/'.$route));
 $twig->addFunction(new Twig\TwigFunction('asset', static fn(string $path): string => '/'.$path));
+// This isolated renderer checks escaping/NULL handling, not CSRF validation.
+// Actual HTTP CSRF checks run through Symfony in the integration/web suites.
+$twig->addFunction(new Twig\TwigFunction('csrf_token', static fn(string $id): string => 'template-test-token'));
 $twig->addExtension(new App\Twig\MoneyExtension());
 $emptyCart = ['GIO_HANG_ID_GIO'=>0, 'GIO_HANG_TRANG_THAI'=>null, 'GIO_HANG_THOI_GIAN'=>null,
     'THANH_VIEN_HO_TEN'=>null, 'THANH_VIEN_TEN_DANG_NHAP'=>null, 'QTV_HO_TEN'=>null,
