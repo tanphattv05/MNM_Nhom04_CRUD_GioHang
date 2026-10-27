@@ -3,6 +3,7 @@ namespace App\Tests;
 
 use App\Security\Account;
 use Doctrine\DBAL\Connection;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
@@ -128,6 +129,79 @@ final class CartDeleteWebTest extends WebTestCase
         self::assertResponseRedirects('/gio-hang/lich-su/7', 303);
         $client->followRedirect();
         self::assertSelectorTextContains('[role="alert"]', 'Chỉ được hủy');
+        self::assertSame([], $this->writes);
+    }
+
+    public static function protectedStatuses(): iterable
+    {
+        yield 'pending' => ['Chờ duyệt'];
+        yield 'approved' => ['Đã duyệt'];
+        yield 'legacy processing' => ['Đang xử lý'];
+        yield 'unknown' => ['Trạng thái khác'];
+        yield 'empty' => [''];
+        yield 'null' => [null];
+    }
+
+    #[DataProvider('protectedStatuses')]
+    public function testAdminCannotDeleteProtectedStatusUsingAnOldForm(?string $status): void
+    {
+        $client = $this->browser(true);
+        $this->cart['GIO_HANG_TRANG_THAI'] = 'Đã hủy';
+        $crawler = $client->request('GET', '/admin/gio-hang/7');
+        $form = $crawler->selectButton('Xóa vĩnh viễn')->form();
+
+        // Keep a real, valid CSRF token while changing database state.
+        $this->cart['GIO_HANG_TRANG_THAI'] = $status;
+        $before = $this->cart;
+        $client->submit($form);
+        self::assertResponseRedirects('/admin/gio-hang/7', 303);
+        self::assertSame($before, $this->cart);
+        self::assertSame([], $this->writes);
+
+        $client->followRedirect();
+        self::assertSelectorTextContains('[role="alert"]', 'Chỉ được xóa');
+        self::assertSelectorNotExists('form[action$="/xoa"]');
+    }
+
+    public function testDeleteHandlesCartRemovedAfterOpeningForm(): void
+    {
+        $client = $this->browser(true);
+        $this->cart['GIO_HANG_TRANG_THAI'] = 'Từ chối';
+        $crawler = $client->request('GET', '/admin/gio-hang/7');
+        $form = $crawler->selectButton('Xóa vĩnh viễn')->form();
+        $this->cart = [];
+
+        $client->submit($form);
+        self::assertResponseStatusCodeSame(404);
+        self::assertSame([], $this->writes);
+    }
+
+    public function testResubmittingDeleteDoesNotWriteTwice(): void
+    {
+        $client = $this->browser(true);
+        $this->cart['GIO_HANG_TRANG_THAI'] = 'Đã hủy';
+        $crawler = $client->request('GET', '/admin/gio-hang/7');
+        $form = $crawler->selectButton('Xóa vĩnh viễn')->form();
+
+        $client->submit($form);
+        self::assertResponseRedirects('/admin/gio-hang', 303);
+        $firstWrites = $this->writes;
+        $client->submit($form);
+        self::assertResponseStatusCodeSame(404);
+        self::assertSame($firstWrites, $this->writes);
+    }
+
+    public function testAdminCannotUseCustomerCancellationEndpoint(): void
+    {
+        $client = $this->browser();
+        $crawler = $client->request('GET', '/gio-hang/lich-su/7');
+        $form = $crawler->selectButton('Hủy giỏ hàng')->form();
+        $before = $this->cart;
+        $client->loginUser(new Account('admin04', true, ''));
+
+        $client->submit($form);
+        self::assertResponseStatusCodeSame(403);
+        self::assertSame($before, $this->cart);
         self::assertSame([], $this->writes);
     }
 
