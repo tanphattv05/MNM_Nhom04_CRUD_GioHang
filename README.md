@@ -103,5 +103,4 @@ Khách hàng cũng có thể tạo tài khoản tại <http://127.0.0.1:8000/dan
 php tests/phase6_smoke.php
 php vendor/phpunit/phpunit/phpunit tests/CartDeleteWebTest.php
 ```
-
 Xem [kịch bản kiểm thử trên web](database/PHASE6_MANUAL_TESTS.md) và [SQL kiểm tra dữ liệu](database/phase6_delete_checks.sql) để đối chiếu kết quả hủy/xóa với database thật.
