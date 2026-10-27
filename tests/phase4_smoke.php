@@ -1,16 +1,4 @@
-Tiếp tục đúng bước còn dang dở của việc chuẩn hóa SQL Server.
-
-File `BanSachDB_Full.sql` đã import thành công vào database thử riêng. Không tạo lại hoặc sửa nội dung đã đạt.
-
-Chỉ kiểm tra trạng thái Doctrine Migrations trên database thử, xác nhận không chạy trùng hai migration đã tích hợp trong schema và kiểm tra `README_DATABASE.md` hướng dẫn đúng hai phương án cài đặt.
-
-Không tác động `BanSachDB` thật, không xóa database thử, không commit. Báo cáo ngắn kết quả và vấn đề còn lại.Tiếp tục đúng bước còn dang dở của việc chuẩn hóa SQL Server.
-
-File `BanSachDB_Full.sql` đã import thành công vào database thử riêng. Không tạo lại hoặc sửa nội dung đã đạt.
-
-Chỉ kiểm tra trạng thái Doctrine Migrations trên database thử, xác nhận không chạy trùng hai migration đã tích hợp trong schema và kiểm tra `README_DATABASE.md` hướng dẫn đúng hai phương án cài đặt.
-
-Không tác động `BanSachDB` thật, không xóa database thử, không commit. Báo cáo ngắn kết quả và vấn đề còn lại.<?php
+<?php
 ob_start();
 require dirname(__DIR__).'/vendor/autoload.php';
 (new Symfony\Component\Dotenv\Dotenv())->bootEnv(dirname(__DIR__).'/.env');

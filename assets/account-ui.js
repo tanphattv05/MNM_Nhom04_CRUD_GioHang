@@ -90,7 +90,6 @@ document.addEventListener('submit', event => {
 window.addEventListener('pageshow', () => { resetLoading(); enhanceUi(); });
 document.addEventListener('turbo:load', enhanceUi);
 document.addEventListener('turbo:before-cache', resetLoading);
-<<<<<<< HEAD
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', enhanceUi); else enhanceUi();
 // Native disclosure supports Enter/Space and remains usable without JavaScript.
 function closeAccountMenus(except = null) {
@@ -120,6 +119,3 @@ document.addEventListener('keydown', event => {
     items[next].focus();
 });
 document.addEventListener('turbo:before-cache', () => closeAccountMenus());
-=======
-if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', enhanceUi); else enhanceUi();
->>>>>>> 8c84cdb6e351eccfe79cd86068c80e673e18764d
