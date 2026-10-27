@@ -1,0 +1,25 @@
+{% extends 'account/layout.html.twig' %}
+
+{% block title %}{{ status_code|default(500) }} - Đã có lỗi xảy ra · Nhà sách Nhóm 04{% endblock %}
+
+{% block content %}
+<div class="empty-state" style="padding: 64px 20px; max-width: 640px; margin: 0 auto; text-align: center;">
+    <div style="font-size: 6rem; font-weight: 850; line-height: 1; color: var(--muted); letter-spacing: -0.05em; margin-bottom: 12px;">
+        {{ status_code|default(500) }}
+    </div>
+    <span class="status-pill status-cancelled" style="margin-bottom: 20px; font-size: 0.82rem; padding: 6px 14px;">
+        Hệ thống phát sinh sự cố
+    </span>
+    <h1 style="font-size: 1.85rem; margin: 16px 0 12px; color: var(--ink);">
+        Đã có sự cố bất ngờ xảy ra
+    </h1>
+    <p style="font-size: 0.95rem; color: var(--muted); line-height: 1.6; margin: 0 auto 32px; max-width: 480px;">
+        Hệ thống đang được kiểm tra và xử lý. Vui lòng thử lại sau vài giây hoặc quay lại trang chủ.
+    </p>
+    <div style="display: flex; gap: 14px; justify-content: center; flex-wrap: wrap;">
+        <a class="button" href="{{ path(app.user ? (is_granted('ROLE_ADMIN') ? 'app_admin_dashboard' : 'app_customer_home') : 'app_home') }}">
+            ← Về trang chủ
+        </a>
+    </div>
+</div>
+{% endblock %}

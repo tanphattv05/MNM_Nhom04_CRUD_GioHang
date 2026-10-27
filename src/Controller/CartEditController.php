@@ -20,6 +20,10 @@ final class CartEditController extends AbstractController
         $data = $carts->detail($id, $this->getUser()->id);
         if (!$data) { throw $this->createNotFoundException('Không tìm thấy giỏ hàng.'); }
         if ($data['cart']['GIO_HANG_TRANG_THAI'] !== 'Chờ duyệt') {
+            if ($request->isMethod('POST')) {
+                $this->addFlash('error', 'Giỏ hàng #'.$id.' đã được Admin xử lý (không còn ở trạng thái Chờ duyệt). Không thể lưu thay đổi.');
+                return $this->redirectToRoute('app_cart_detail', ['id'=>$id], Response::HTTP_SEE_OTHER);
+            }
             throw $this->createAccessDeniedException('Chỉ được sửa giỏ hàng Chờ duyệt.');
         }
         $items = [];
@@ -51,7 +55,13 @@ final class CartEditController extends AbstractController
                 $service->updateSubmitted($this->getUser(), $id, $items, $note);
                 $this->addFlash('success', 'Đã cập nhật giỏ hàng #'.$id.'.');
                 return $this->redirectToRoute('app_cart_detail', ['id'=>$id], Response::HTTP_SEE_OTHER);
-            } catch (\DomainException $e) { $error = $e->getMessage(); }
+            } catch (\DomainException $e) {
+                if (str_contains($e->getMessage(), 'Chờ duyệt')) {
+                    $this->addFlash('error', $e->getMessage());
+                    return $this->redirectToRoute('app_cart_detail', ['id'=>$id], Response::HTTP_SEE_OTHER);
+                }
+                $error = $e->getMessage();
+            }
             catch (\Doctrine\DBAL\Exception) { $error = 'Chưa thể cập nhật giỏ hàng. Dữ liệu chưa được lưu. Vui lòng thử lại.'; }
         }
         $lines = [];

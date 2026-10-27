@@ -1,0 +1,358 @@
+{% extends 'account/layout.html.twig' %}
+
+{% block title %}Xác nhận đặt hàng & Thanh toán · Nhà sách Nhóm 04{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<link rel="stylesheet" href="{{ asset('styles/shop.css') }}">
+<style>
+.checkout-steps {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+    margin: 10px 0 32px;
+    flex-wrap: wrap;
+}
+.checkout-step {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.86rem;
+    font-weight: 600;
+    color: var(--muted);
+}
+.checkout-step.is-done {
+    color: #16a34a;
+}
+.checkout-step.is-active {
+    color: var(--blue);
+}
+.step-number {
+    display: grid;
+    place-items: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: #edf2f9;
+    color: var(--muted);
+    font-size: 0.78rem;
+    font-weight: 700;
+}
+.checkout-step.is-done .step-number {
+    background: #dcfce7;
+    color: #16a34a;
+}
+.checkout-step.is-active .step-number {
+    background: var(--blue);
+    color: #fff;
+    box-shadow: 0 4px 10px #2563eb28;
+}
+.step-divider {
+    color: var(--line);
+    font-size: 1.1rem;
+}
+.checkout-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.4fr) minmax(320px, 1fr);
+    gap: 28px;
+    align-items: start;
+}
+.checkout-section {
+    margin-bottom: 24px;
+}
+.checkout-section h2 {
+    font-size: 1.15rem;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.radio-card-group {
+    display: grid;
+    gap: 12px;
+}
+.radio-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 16px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: #fff;
+    cursor: pointer;
+    transition: border-color .18s, background .18s, box-shadow .18s;
+}
+.radio-card:hover {
+    border-color: #b9cdf5;
+    background: #fbfdff;
+}
+.radio-card:has(input:checked) {
+    border-color: var(--blue);
+    background: #eff5ff;
+    box-shadow: 0 0 0 1px var(--blue);
+}
+.radio-card input[type="radio"] {
+    margin-top: 3px;
+}
+.radio-card-content {
+    flex: 1;
+    min-width: 0;
+}
+.radio-card-title {
+    font-weight: 650;
+    font-size: 0.92rem;
+    color: var(--ink);
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+}
+.radio-card-desc {
+    font-size: 0.8rem;
+    color: var(--muted);
+    margin-top: 4px;
+}
+.order-items-compact {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin: 18px 0;
+    max-height: 280px;
+    overflow-y: auto;
+    padding-right: 6px;
+}
+.order-item-compact {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 0.86rem;
+}
+.item-badge {
+    width: 38px;
+    height: 48px;
+    border-radius: 6px;
+    background: linear-gradient(135deg, #dae8ff, #aac8f3);
+    color: #234f91;
+    display: grid;
+    place-items: center;
+    font-size: 1.2rem;
+    flex-shrink: 0;
+}
+.item-details {
+    flex: 1;
+    min-width: 0;
+}
+.item-title {
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: block;
+}
+.item-sub {
+    font-size: 0.78rem;
+    color: var(--muted);
+    margin-top: 2px;
+}
+@media(max-width: 900px) {
+    .checkout-grid {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="checkout-steps" aria-label="Tiến trình đặt hàng">
+    <div class="checkout-step is-done">
+        <span class="step-number" aria-hidden="true">✓</span>
+        <span>1. Giỏ hàng</span>
+    </div>
+    <span class="step-divider" aria-hidden="true">→</span>
+    <div class="checkout-step is-active" aria-current="step">
+        <span class="step-number" aria-hidden="true">2</span>
+        <span>2. Thông tin giao hàng & Thanh toán</span>
+    </div>
+    <span class="step-divider" aria-hidden="true">→</span>
+    <div class="checkout-step">
+        <span class="step-number" aria-hidden="true">3</span>
+        <span>3. Hoàn tất & Chờ duyệt</span>
+    </div>
+</div>
+
+<div class="page-heading">
+    <div>
+        <p class="eyebrow">XÁC NHẬN VÀ THANH TOÁN</p>
+        <h1>Thông tin đặt hàng</h1>
+        <p>Vui lòng kiểm tra địa chỉ nhận sách và lựa chọn phương thức thanh toán phù hợp.</p>
+    </div>
+    <a href="{{ path('app_my_cart') }}">← Quay lại sửa giỏ hàng</a>
+</div>
+
+{% if error %}
+    <div class="error" role="alert">{{ error }}</div>
+{% endif %}
+
+<form action="{{ path('app_cart_checkout_submit') }}" method="post" data-turbo="false">
+    <input type="hidden" name="_token" value="{{ csrf_token('cart_checkout') }}">
+    <input type="hidden" name="nonce" value="{{ nonce }}">
+
+    <div class="checkout-grid">
+        {# Cột trái: Thông tin nhận hàng, Vận chuyển, Thanh toán #}
+        <div class="checkout-forms">
+            {# 1. Thông tin người nhận #}
+            <section class="card checkout-section">
+                <h2>📍 1. Địa chỉ giao nhận hàng</h2>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                    <div>
+                        <label for="recipient_name" class="required">Họ và tên người nhận</label>
+                        <input id="recipient_name" type="text" name="recipient_name" value="{{ recipient_name }}" maxlength="100" placeholder="Ví dụ: Nguyễn Văn A" required>
+                    </div>
+                    <div>
+                        <label for="recipient_phone" class="required">Số điện thoại liên hệ</label>
+                        <input id="recipient_phone" type="tel" name="recipient_phone" value="{{ recipient_phone }}" maxlength="20" placeholder="Ví dụ: 0912345678" required>
+                    </div>
+                </div>
+
+                <label for="recipient_address" class="required" style="margin-top: 14px;">Địa chỉ giao hàng chi tiết</label>
+                <input id="recipient_address" type="text" name="recipient_address" value="{{ recipient_address }}" maxlength="200" placeholder="Số nhà, tên đường, phường/xã, quận/huyện, tỉnh/thành phố" required>
+
+                {% if recipient_email %}
+                    <p style="font-size: 0.8rem; color: var(--muted); margin-top: 10px;">
+                        ✉️ Thông tin trạng thái đơn hàng sẽ được cập nhật cho tài khoản: <strong>{{ recipient_email }}</strong>
+                    </p>
+                {% endif %}
+            </section>
+
+            {# 2. Phương thức vận chuyển #}
+            <section class="card checkout-section">
+                <h2>🚚 2. Hình thức giao hàng</h2>
+                <div class="radio-card-group">
+                    <label class="radio-card">
+                        <input type="radio" name="shipping_method" value="standard" {{ shipping_method == 'standard' ? 'checked' : '' }}>
+                        <div class="radio-card-content">
+                            <div class="radio-card-title">
+                                <span>Giao hàng tiêu chuẩn</span>
+                                <strong style="color: #16a34a;">Miễn phí</strong>
+                            </div>
+                            <p class="radio-card-desc">Giao tận nơi qua bưu điện/chuyển phát từ 2 - 3 ngày làm việc.</p>
+                        </div>
+                    </label>
+
+                    <label class="radio-card">
+                        <input type="radio" name="shipping_method" value="express" {{ shipping_method == 'express' ? 'checked' : '' }}>
+                        <div class="radio-card-content">
+                            <div class="radio-card-title">
+                                <span>Giao hàng hỏa tốc 24h</span>
+                                <strong>30.000 ₫</strong>
+                            </div>
+                            <p class="radio-card-desc">Ưu tiên đóng gói và chuyển phát ngay trong ngày tại khu vực nội thành.</p>
+                        </div>
+                    </label>
+                </div>
+            </section>
+
+            {# 3. Phương thức thanh toán #}
+            <section class="card checkout-section">
+                <h2>💳 3. Phương thức thanh toán</h2>
+                <div class="radio-card-group">
+                    <label class="radio-card">
+                        <input type="radio" name="payment_method" value="cod" {{ payment_method == 'cod' ? 'checked' : '' }}>
+                        <div class="radio-card-content">
+                            <div class="radio-card-title">
+                                <span>💵 Thanh toán tiền mặt khi nhận hàng (COD)</span>
+                            </div>
+                            <p class="radio-card-desc">Bạn kiểm tra sách và thanh toán trực tiếp cho nhân viên giao hàng.</p>
+                        </div>
+                    </label>
+
+                    <label class="radio-card">
+                        <input type="radio" name="payment_method" value="banking" {{ payment_method == 'banking' ? 'checked' : '' }}>
+                        <div class="radio-card-content">
+                            <div class="radio-card-title">
+                                <span>🏦 Chuyển khoản ngân hàng (Quét mã VietQR)</span>
+                            </div>
+                            <p class="radio-card-desc">Quét mã QR thanh toán nhanh qua ứng dụng ngân hàng hoặc Internet Banking.</p>
+                        </div>
+                    </label>
+
+                    <label class="radio-card">
+                        <input type="radio" name="payment_method" value="vnpay" {{ payment_method == 'vnpay' ? 'checked' : '' }}>
+                        <div class="radio-card-content">
+                            <div class="radio-card-title">
+                                <span>💳 Thẻ ATM / Visa / Ví điện tử VNPAY</span>
+                            </div>
+                            <p class="radio-card-desc">Cổng thanh toán điện tử an toàn, tiện lợi qua ứng dụng ngân hàng.</p>
+                        </div>
+                    </label>
+                </div>
+            </section>
+
+            {# 4. Ghi chú đơn hàng #}
+            <section class="card checkout-section">
+                <h2>📝 4. Lời nhắn / Ghi chú thêm</h2>
+                <label for="note" style="margin-top: 0;">Ghi chú gửi nhà sách (không bắt buộc)</label>
+                <textarea id="note" name="note" maxlength="150" rows="3" placeholder="Ví dụ: Giao vào giờ hành chính, gọi điện trước khi tới, bọc màng co bảo vệ sách...">{{ note }}</textarea>
+            </section>
+        </div>
+
+        {# Cột phải: Tóm tắt đơn hàng & Nút Xác nhận #}
+        <aside class="card cart-summary" style="top: 20px;">
+            <p class="eyebrow">ĐƠN HÀNG CỦA BẠN</p>
+            <h2>Tóm tắt đơn hàng ({{ lines|length }} sách)</h2>
+
+            <div class="order-items-compact">
+                {% for line in lines %}
+                    <div class="order-item-compact">
+                        <div class="item-badge" aria-hidden="true">▤</div>
+                        <div class="item-details">
+                            <span class="item-title" title="{{ line.book ? line.book.SACH_TEN_SACH : 'Sách' }}">
+                                {{ line.book ? line.book.SACH_TEN_SACH : 'Sách không còn tồn tại' }}
+                            </span>
+                            <span class="item-sub">
+                                {{ line.quantity }} × {{ line.price|vnd(true) }}
+                            </span>
+                        </div>
+                        <strong style="font-size: 0.88rem; color: var(--blue); white-space: nowrap;">
+                            {{ line.subtotal|vnd(true) }}
+                        </strong>
+                    </div>
+                {% endfor %}
+            </div>
+
+            <div class="summary-row" style="margin-top: 16px; border-top: 1px solid var(--line); padding-top: 14px;">
+                <span>Tạm tính tiền sách</span>
+                <strong>{{ total|vnd(true) }}</strong>
+            </div>
+
+            <div class="summary-row">
+                <span>Phí vận chuyển</span>
+                <span id="shipping-fee-text" style="color: #16a34a; font-weight: 600;">Miễn phí</span>
+            </div>
+
+            <div class="summary-row grand-total">
+                <span>Tổng thanh toán</span>
+                <strong id="grand-total-text">{{ total|vnd(true) }}</strong>
+            </div>
+
+            <button type="submit" class="primary" style="width: 100%; min-height: 48px; font-size: 1rem; margin-top: 18px;" {{ not valid ? 'disabled' : '' }}>
+                ✓ Xác nhận đặt hàng
+            </button>
+
+            <a class="button button-outline" href="{{ path('app_my_cart') }}" style="width: 100%; margin-top: 10px; font-size: 0.84rem;">
+                ← Quay lại giỏ hàng
+            </a>
+
+            <div style="margin-top: 24px; padding: 14px; background: #f8faff; border-radius: 10px; font-size: 0.78rem; color: var(--muted); line-height: 1.6;">
+                <p style="margin: 0 0 6px; font-weight: 600; color: var(--ink);">🛡️ Quyền lợi khi mua tại Nhà sách Nhóm 04:</p>
+                <ul style="margin: 0; padding-left: 18px;">
+                    <li>100% sách chính hãng, nguồn gốc rõ ràng.</li>
+                    <li>Được đồng kiểm cùng bưu tá khi nhận.</li>
+                    <li>Đơn hàng sẽ chuyển sang trạng thái <strong>Chờ duyệt</strong> để nhân viên chuẩn bị sách từ kho.</li>
+                </ul>
+            </div>
+        </aside>
+    </div>
+</form>
+{% endblock %}
