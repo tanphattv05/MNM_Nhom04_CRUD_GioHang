@@ -11,14 +11,14 @@
 <p>{{ total }} giỏ hàng. Tổng tiền được tính theo giá sách hiện tại, không phải giá tại thời điểm gửi.</p>
 <div class="history-grid">
 {% for cart in carts %}<article class="card history-card"><h2><a href="{{ path(admin ? 'app_admin_cart_detail' : 'app_cart_detail', {id: cart.GIO_HANG_ID_GIO}) }}">Giỏ #{{ cart.GIO_HANG_ID_GIO }}</a></h2>
-<span class="status-pill">{{ cart.GIO_HANG_TRANG_THAI ?: 'Chưa có trạng thái' }}</span>
+{% include 'components/status.html.twig' with {state:cart.GIO_HANG_TRANG_THAI} only %}
 <p>Thời gian gửi: {{ cart.GIO_HANG_THOI_GIAN ? cart.GIO_HANG_THOI_GIAN|date('d/m/Y H:i') : 'Chưa có' }}</p>
 {% if admin %}<p>Khách hàng: {{ cart.THANH_VIEN_HO_TEN ?: 'Chưa có tên' }} ({{ cart.THANH_VIEN_TEN_DANG_NHAP ?? 'Chưa xác định' }})</p>{% endif %}
 <p>{{ cart.line_count }} dòng sách</p><p>Tổng theo giá hiện tại: <strong>{{ cart.current_total is null ? 'Chưa đủ dữ liệu giá' : cart.current_total|vnd }}</strong></p>
 <a class="text-link" href="{{ path(admin ? 'app_admin_cart_detail' : 'app_cart_detail', {id: cart.GIO_HANG_ID_GIO}) }}">Xem chi tiết →</a>
 {% if not admin and cart.GIO_HANG_TRANG_THAI == 'Chờ duyệt' %}<a class="button button-small" href="{{ path('app_cart_edit', {id:cart.GIO_HANG_ID_GIO}) }}">Sửa giỏ hàng</a>{% endif %}
 </article>
-{% else %}<section class="card empty-state"><h2>Không có giỏ hàng phù hợp</h2></section>{% endfor %}</div>
+{% else %}<section class="card empty-state"><span class="feature-icon" aria-hidden="true">▤</span><h2>Không có giỏ hàng phù hợp</h2><p>{{ admin ? 'Thử thay đổi từ khóa hoặc trạng thái để tìm yêu cầu cần xử lý.' : 'Giỏ hàng sau khi gửi sẽ xuất hiện tại đây. Hãy chọn những cuốn sách bạn yêu thích.' }}</p><a class="button button-outline" href="{{ path(admin ? list_route : 'app_catalog') }}">{{ admin ? 'Xóa bộ lọc' : 'Khám phá sách' }}</a></section>{% endfor %}</div>
 <nav class="pagination" aria-label="Phân trang giỏ hàng">
 {% if page > 1 %}<a href="{{ path(list_route, {q:q, status:status, page:page-1}) }}">← Trước</a>{% endif %}
 <span aria-current="page">Trang {{ page }} / {{ pages }}</span>

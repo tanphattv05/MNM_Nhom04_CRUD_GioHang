@@ -3,21 +3,21 @@
 {% block stylesheets %}{{ parent() }}<link rel="stylesheet" href="{{ asset('styles/shop.css') }}">{% endblock %}
 {% block content %}
 <div class="page-heading"><h1>Giỏ #{{ cart.GIO_HANG_ID_GIO }}</h1><a href="{{ path(admin ? 'app_admin_carts' : 'app_cart_history') }}">← Danh sách giỏ đã gửi</a></div>
-<section class="card history-card"><span class="status-pill">{{ cart.GIO_HANG_TRANG_THAI ?: 'Chưa có trạng thái' }}</span>
+<section class="card history-card">{% include 'components/status.html.twig' with {state:cart.GIO_HANG_TRANG_THAI} only %}
 <p>Thời gian gửi: {{ cart.GIO_HANG_THOI_GIAN ? cart.GIO_HANG_THOI_GIAN|date('d/m/Y H:i') : 'Chưa có' }}</p>
 {% if admin %}<p>Khách hàng: {{ cart.THANH_VIEN_HO_TEN ?: 'Chưa có tên' }} ({{ cart.THANH_VIEN_TEN_DANG_NHAP ?? 'Chưa xác định' }})</p>{% endif %}
 <p>Quản trị viên phụ trách: {{ cart.QTV_HO_TEN ?: (cart.QTV_USER_ADMIN ?? 'Chưa phân công') }}</p>
 <p class="cart-read-note">Ghi chú khách hàng: {{ cart.GIO_HANG_GHI_CHU ?: 'Không có ghi chú' }}</p>
 {% if cart.GIO_HANG_TRANG_THAI == 'Từ chối' %}<p class="cart-read-note">Lý do từ chối: {{ cart.GIO_HANG_LY_DO_TU_CHOI ?? 'Chưa có lý do được lưu riêng' }}</p>{% endif %}</section>
-<p>Giá và tổng tiền dưới đây được tính theo giá sách hiện tại, không phải giá lịch sử tại thời điểm gửi giỏ.</p>
+<p class="stock-note">Giá và tổng tiền dưới đây được tính theo giá sách hiện tại, không phải giá lịch sử tại thời điểm gửi giỏ.</p>
 <section class="card read-table"><table><thead><tr><th scope="col">Sách</th><th scope="col">Số lượng</th><th scope="col">Giá hiện tại</th><th scope="col">Thành tiền hiện tại</th></tr></thead><tbody>
-{% for line in lines %}<tr><td>{{ line.SACH_TEN_SACH ?: 'Sách chưa có thông tin' }} (#{{ line.SACH_ID_SACH }})</td><td>{{ line.MUA_SO_LUONG_MUA }}</td><td>{{ line.SACH_GIA_BAN is null ? 'Chưa có giá' : line.SACH_GIA_BAN|vnd }}</td><td>{{ line.subtotal is null ? 'Chưa đủ dữ liệu giá' : line.subtotal|vnd }}</td></tr>
+{% for line in lines %}<tr><td data-label="Sách">{{ line.SACH_TEN_SACH ?: 'Sách chưa có thông tin' }} (#{{ line.SACH_ID_SACH }})</td><td data-label="Số lượng">{{ line.MUA_SO_LUONG_MUA }}</td><td data-label="Giá hiện tại">{{ line.SACH_GIA_BAN is null ? 'Chưa có giá' : line.SACH_GIA_BAN|vnd }}</td><td data-label="Thành tiền">{{ line.subtotal is null ? 'Chưa đủ dữ liệu giá' : line.subtotal|vnd }}</td></tr>
 {% else %}<tr><td colspan="4">Giỏ hàng trống, chưa có sách.</td></tr>{% endfor %}
 </tbody></table></section><div class="summary-row grand-total"><span>Tổng theo giá hiện tại</span><strong>{{ cart.current_total is null ? 'Chưa đủ dữ liệu giá' : cart.current_total|vnd }}</strong></div>
 
 {% if not admin and cart.GIO_HANG_TRANG_THAI == 'Chờ duyệt' %}<a class="button button-small" href="{{ path('app_cart_edit', {id:cart.GIO_HANG_ID_GIO}) }}">Sửa giỏ hàng</a>{% endif %}
 {% if admin and cart.GIO_HANG_TRANG_THAI == 'Chờ duyệt' %}
-<section class="card history-card">
+<section class="card history-card review-panel">
 <h2>Xử lý giỏ hàng</h2>
 <form method="post" action="{{ path('app_admin_cart_review', {id:cart.GIO_HANG_ID_GIO, action:'approve'}) }}" data-turbo="false">
 <input type="hidden" name="_token" value="{{ csrf_token('cart_approve_' ~ cart.GIO_HANG_ID_GIO) }}">
@@ -28,28 +28,28 @@
 <label for="reject-reason">Lý do từ chối (bắt buộc)</label>
 <textarea id="reject-reason" name="reason" required maxlength="255" rows="3"></textarea>
 <p>Lý do từ chối được lưu riêng, giữ nguyên ghi chú khách hàng.</p>
-<button class="button" type="submit">Từ chối</button>
+<button class="button button-warning" type="submit">Từ chối</button>
 </form>
 </section>
 {% endif %}
 {% if not admin and cart.GIO_HANG_TRANG_THAI == 'Chờ duyệt' %}
-<section class="card history-card">
+<section class="card history-card danger-zone">
 <h2>Hủy giỏ hàng</h2>
 <p>Giỏ đã hủy không thể sửa hoặc gửi duyệt lại. Lịch sử và chi tiết giỏ vẫn được lưu.</p>
 <form method="post" action="{{ path('app_cart_cancel', {id:cart.GIO_HANG_ID_GIO}) }}" data-turbo="false">
 <input type="hidden" name="_token" value="{{ csrf_token('cart_cancel_' ~ cart.GIO_HANG_ID_GIO) }}">
 <label><input type="checkbox" required> Tôi xác nhận hủy giỏ #{{ cart.GIO_HANG_ID_GIO }}.</label>
-<button class="button" type="submit">Hủy giỏ hàng</button>
+<button class="button button-danger" type="submit">Hủy giỏ hàng</button>
 </form></section>
 {% endif %}
 {% if admin %}
-<section class="card history-card"><h2>Xóa giỏ hàng</h2>
+<section class="card history-card danger-zone"><h2>Xóa giỏ hàng</h2>
 {% if cart.GIO_HANG_TRANG_THAI in ['Đã hủy', 'Từ chối'] %}
 <p>Xóa vĩnh viễn giỏ #{{ cart.GIO_HANG_ID_GIO }} và toàn bộ dòng sách liên quan. Không thể khôi phục.</p>
 <form method="post" action="{{ path('app_admin_cart_delete', {id:cart.GIO_HANG_ID_GIO}) }}" data-turbo="false">
 <input type="hidden" name="_token" value="{{ csrf_token('cart_delete_' ~ cart.GIO_HANG_ID_GIO) }}">
 <label><input type="checkbox" required> Tôi xác nhận xóa vĩnh viễn giỏ #{{ cart.GIO_HANG_ID_GIO }}.</label>
-<button class="button" type="submit">Xóa vĩnh viễn</button>
+<button class="button button-danger" type="submit">Xóa vĩnh viễn</button>
 </form>
 {% else %}<p>Chỉ được xóa giỏ Đã hủy hoặc Từ chối. Giỏ chờ duyệt và đã duyệt phải được giữ lại.</p>{% endif %}
 </section>

@@ -8,12 +8,13 @@
 {% endblock %}
 {% block body %}
 <div class="site-shell">
+<a class="skip-link" href="#main-content">Chuyển đến nội dung chính</a>
 <header class="site-header">
     <a class="brand" href="{{ path(app.user ? (is_admin ? 'app_admin_dashboard' : 'app_customer_home') : 'app_home') }}"><span class="brand-mark" aria-hidden="true">▤</span><span>NHÀ SÁCH<strong>Nhóm 04<span class="brand-dot">.</span></strong></span></a>
 {% if not is_admin %}
 <nav class="customer-nav" aria-label="Menu khách hàng">
     {% for route, label in {'app_customer_home':'Trang chủ','app_catalog':'Danh mục sách','app_my_cart':'Giỏ hàng','app_cart_history':'Lịch sử giỏ','app_profile':'Hồ sơ'} %}
-    {% set active = current == route or (route == 'app_profile' and current == 'app_password') or (route == 'app_cart_history' and current == 'app_cart_detail') %}
+    {% set active = current == route or (route == 'app_profile' and current == 'app_password') or (route == 'app_cart_history' and current in ['app_cart_detail', 'app_cart_edit']) %}
     <a class="{{ active ? 'active' : '' }}" {% if active %}aria-current="page"{% endif %} href="{{ path(route) }}">{{ label }}</a>
     {% endfor %}
 </nav>
@@ -31,6 +32,6 @@
 {% endif %}
 <main id="main-content" class="main-content">{% for message in app.flashes('success') %}<div class="notice" role="status">{{ message }}</div>{% endfor %}{% for message in app.flashes('error') %}<div class="notice" role="alert">{{ message }}</div>{% endfor %}{% block content %}{% endblock %}</main>
 </div>
-<footer class="site-footer"><div><strong>Nhà sách Nhóm 04</strong><p>Nuôi dưỡng thói quen đọc, mở rộng những chân trời.</p></div><span>Đọc sách · Kết nối · Khám phá</span></footer>
+<footer class="site-footer"><div><strong>Nhà sách Nhóm 04<span class="brand-dot">.</span></strong><p>Nuôi dưỡng thói quen đọc, mở rộng những chân trời.</p></div><div class="footer-links"><a href="{{ path(is_admin ? 'app_admin_dashboard' : 'app_home') }}">{{ is_admin ? 'Tổng quan quản trị' : 'Trang chủ' }}</a>{% if not is_admin %}<a href="{{ path('app_catalog') }}">Khám phá sách</a>{% endif %}<span>Đọc sách · Kết nối · Khám phá</span></div></footer>
 </div>
 {% endblock %}

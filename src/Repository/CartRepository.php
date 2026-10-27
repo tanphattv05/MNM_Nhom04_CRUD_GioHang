@@ -48,6 +48,8 @@ final class CartRepository
 
     public function detail(int $id, ?string $owner): ?array
     {
+        // Route parameters may exceed SQL Server INT even on 64-bit PHP.
+        if ($id < 1 || $id > 2147483647) { return null; }
         $params = [$id];
         if ($owner !== null) { $params[] = $owner; }
         $cart = $this->db->fetchAssociative('SELECT '.self::FIELDS.' FROM dbo.GIO_HANG g'.self::JOINS.self::TOTALS.' WHERE g.GIO_HANG_ID_GIO = ?'.($owner !== null ? ' AND g.THANH_VIEN_TEN_DANG_NHAP = ?' : ''), $params);
