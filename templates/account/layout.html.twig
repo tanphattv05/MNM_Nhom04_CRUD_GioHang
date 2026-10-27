@@ -9,6 +9,7 @@
 {% block body %}
 <div class="site-shell">
 <a class="skip-link" href="#main-content">Chuyển đến nội dung chính</a>
+<<<<<<< HEAD
 <header class="site-header {{ is_admin ? 'is-admin' : '' }}">
 <div class="header-container">
 <div class="header-brand-search">
@@ -20,6 +21,13 @@
 {% if not is_admin %}
 <nav class="customer-nav" aria-label="Menu khách hàng">
     {% for route, label in {'app_customer_home':'Trang chủ','app_catalog':'Danh mục','app_my_cart':'Giỏ hàng','app_cart_history':'Lịch sử'} %}
+=======
+<header class="site-header">
+    <a class="brand" href="{{ path(app.user ? (is_admin ? 'app_admin_dashboard' : 'app_customer_home') : 'app_home') }}"><span class="brand-mark" aria-hidden="true">▤</span><span>NHÀ SÁCH<strong>Nhóm 04<span class="brand-dot">.</span></strong></span></a>
+{% if not is_admin %}
+<nav class="customer-nav" aria-label="Menu khách hàng">
+    {% for route, label in {'app_customer_home':'Trang chủ','app_catalog':'Danh mục sách','app_my_cart':'Giỏ hàng','app_cart_history':'Lịch sử giỏ','app_profile':'Hồ sơ'} %}
+>>>>>>> 8c84cdb6e351eccfe79cd86068c80e673e18764d
     {% set active = current == route or (route == 'app_profile' and current == 'app_password') or (route == 'app_cart_history' and current in ['app_cart_detail', 'app_cart_edit']) %}
     <a class="{{ active ? 'active' : '' }}" {% if active %}aria-current="page"{% endif %} href="{{ path(route) }}">{{ label }}</a>
     {% endfor %}
