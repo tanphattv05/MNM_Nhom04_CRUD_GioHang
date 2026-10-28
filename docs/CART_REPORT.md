@@ -163,7 +163,7 @@ Với báo cáo hội đồng, nên demo trực tiếp một giỏ mới: đối
 
 ## 09. Cài đặt và vận hành
 
-[README mục 09](../README.md#09-cài-đặt-và-chạy-dự-án) là hướng dẫn chính; [README_DATABASE](../database/README_DATABASE.md) phân biệt cài mới/nâng cấp. Môi trường xác minh là PHP 8.4.26, `pdo_sqlsrv` 5.13.3, Symfony 7.4.21 và instance SQL Server mặc định local. Không yêu cầu máy khác dùng cùng tên host.
+[README mục 08](../README.md#08-cài-đặt-và-chạy-dự-án) là hướng dẫn chính; [README_DATABASE](../database/README_DATABASE.md) phân biệt cài mới/nâng cấp. Môi trường xác minh là PHP 8.4.26, `pdo_sqlsrv` 5.13.3, Symfony 7.4.21 và instance SQL Server mặc định local. Không yêu cầu máy khác dùng cùng tên host.
 
 Trạng thái migration hiện tại ngày 28/10: 4 executed, 4 available, 0 new. Đã sao lưu COPY_ONLY và kiểm tra RESTORE VERIFYONLY trước khi áp dụng migration đổi mã thành viên/điện thoại; chạy thử migration trong transaction rồi rollback trước lần áp dụng thật. Số thử 11 chữ số của tài khoản `gggg` được đổi sang `0000000000` theo xác nhận. Fingerprint chuẩn hóa xác nhận các dữ liệu khác và giá trị mã liên kết được giữ nguyên. `.env.local` sinh riêng cho máy và bị Git bỏ qua.
 

@@ -1,5 +1,9 @@
 # Use case · Module giỏ hàng
 
+![Use Case module giỏ hàng](use-case.png)
+
+[Ảnh PNG](use-case.png) · [SVG vector](use-case.svg). Tạo lại ảnh bằng `python scripts/render_cart_diagrams.py` (cần matplotlib).
+
 Sơ đồ nhóm chức năng theo tác nhân, biểu diễn bằng Mermaid flowchart để GitHub hiển thị trực tiếp.
 
 ```mermaid

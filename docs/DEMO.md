@@ -1,6 +1,6 @@
 # Demo module Cart
 
-Chạy web theo [README](../README.md#09-cài-đặt-và-chạy-dự-án), mở http://127.0.0.1:8000/. Demo trực tiếp bằng tài khoản riêng vừa đăng ký; dùng Admin đã được người vận hành cấp.
+Chạy web theo [README](../README.md#08-cài-đặt-và-chạy-dự-án), mở http://127.0.0.1:8000/. Demo trực tiếp bằng tài khoản riêng vừa đăng ký; dùng Admin đã được người vận hành cấp.
 
 ## Kịch bản thuyết trình
 

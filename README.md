@@ -10,7 +10,7 @@ Website bán sách phục vụ đồ án: khách hàng tìm sách, quản lý gi
 
 **Mã nguồn:** [MNM_Nhom04_CRUD_GioHang trên GitHub](https://github.com/tanphattv05/MNM_Nhom04_CRUD_GioHang).
 
-- [Cài đặt và chạy demo](#09-cài-đặt-và-chạy-dự-án)
+- [Cài đặt và chạy demo](#08-cài-đặt-và-chạy-dự-án)
 - [Báo cáo kỹ thuật Cart](docs/CART_REPORT.md)
 - [Test case và kết quả thực tế](docs/test-cases.md)
 - [Hướng dẫn database](database/README_DATABASE.md)
@@ -44,35 +44,20 @@ Module chính là **CRUD giỏ hàng**, có đăng ký/đăng nhập bằng **us
 
 Phạm vi CRUD của đồ án là **giỏ hàng**. Repo hiện chưa có màn hình quản trị thêm/sửa/xóa sách.
 
-## 02. Yêu cầu và checklist chức năng
+## 02. Kiến trúc và sơ đồ
 
-| Chức năng trong checklist | Trạng thái | Cách triển khai |
-|---|---|---|
-| Hiển thị danh sách sách trong giỏ | Đã có | `/gio-hang`, tên sách, tồn kho và số lượng |
-| Thêm sách vào giỏ | Đã có | POST từ danh mục, kiểm tra sách/giá/tồn kho |
-| Cập nhật số lượng | Đã có | Giỏ tạm và giỏ đã gửi ở trạng thái Chờ duyệt |
-| Xóa một sách khỏi giỏ | Đã có | Nút Bỏ sách; giỏ đã gửi không được lưu rỗng |
-| Thành tiền và tổng tiền | Đã có | Giá từ database, tính bằng số nguyên đơn vị 1/100 đồng |
-| Kiểm tra tồn kho | Đã có | Khi thêm/sửa, vào checkout, gửi và Admin duyệt |
-| Chặn số lượng 0 hoặc âm | Đã có | Validation phía server; xóa bằng thao tác riêng |
-| Xử lý sách trùng | Đã có | Gộp theo mã sách, cộng số lượng và kiểm tra lại kho |
-| Giữ giỏ khi tải lại trang | Đã có | Giỏ tạm lưu session, phân biệt theo thành viên |
-| Kiểm tra trước checkout | Đã có | Chặn giỏ rỗng, sách mất, giá lỗi hoặc thiếu kho |
+Giỏ nháp dùng Symfony Session; giỏ đã gửi dùng `GIO_HANG` và `MUA` trên SQL Server. Nhấn vào ảnh để xem sơ đồ ở kích thước đầy đủ.
 
-**10/10 mục Cart đã có triển khai và kiểm thử**; điều này không đồng nghĩa đã có cổng thanh toán trực tuyến. Quy tắc bổ sung: tối đa 100 đầu sách; số lượng nguyên 1–999.999.999 và không vượt kho; mọi thao tác ghi dùng POST + CSRF; không nhận giá, chủ sở hữu hoặc trạng thái do client chỉ định.
+| Sơ đồ | Hình ảnh |
+|---|---|
+| [Kiến trúc ứng dụng](docs/diagrams/architecture.md) — giao diện, Controller, Service và tầng dữ liệu | [![Kiến trúc ứng dụng](docs/diagrams/architecture.png)](docs/diagrams/architecture.png) |
+| [Use Case](docs/diagrams/use-case.md) — chức năng của khách hàng và quản trị viên | [![Use Case module giỏ hàng](docs/diagrams/use-case.png)](docs/diagrams/use-case.png) |
+| [Sequence](docs/diagrams/cart-sequence.md) — luồng thêm sách và xác nhận đặt hàng | [![Sequence thêm sách và đặt hàng](docs/diagrams/cart-sequence.png)](docs/diagrams/cart-sequence.png) |
+| [ERD](docs/diagrams/database-erd.md) — sáu bảng nghiệp vụ và các khóa liên kết | [![ERD website bán sách](docs/diagrams/database-erd.png)](docs/diagrams/database-erd.png) |
 
-## 03. Kiến trúc và sơ đồ
+Phân tích chi tiết: [báo cáo Cart](docs/CART_REPORT.md). Bản vector và bản dùng trong báo cáo: [SVG ERD](docs/diagrams/database-erd.svg), [PDF ERD](docs/diagrams/database-erd.pdf).
 
-Luồng chính: **Twig/Form → Controller → Service → Repository/Doctrine DBAL → SQL Server**. Giỏ nháp dùng Symfony Session; giỏ đã gửi dùng `GIO_HANG` và `MUA`.
-
-- [Use case](docs/diagrams/use-case.md)
-- [Sequence thêm sách và đặt hàng](docs/diagrams/cart-sequence.md)
-- [ERD sáu bảng nghiệp vụ](docs/diagrams/database-erd.md)
-- [Phân tích luồng và transaction](docs/CART_REPORT.md)
-
-ERD đã đối chiếu với SQL Server thực tế: [ảnh PNG](docs/diagrams/database-erd.png), [SVG](docs/diagrams/database-erd.svg), [PDF dùng trong báo cáo](docs/diagrams/database-erd.pdf). Sơ đồ thể hiện đủ sáu bảng và quan hệ chủ giỏ, bao gồm những phần đã bổ sung so với mô hình thiết kế ban đầu.
-
-## 04. Dữ liệu và cấu trúc repository
+## 03. Dữ liệu và cấu trúc repository
 
 | Nơi lưu | Vai trò |
 |---|---|
@@ -116,7 +101,7 @@ ERD đã đối chiếu với SQL Server thực tế: [ảnh PNG](docs/diagrams/
 
 Ứng dụng hiện truy vấn bằng **Doctrine DBAL, không dùng Entity ORM cho nghiệp vụ**. Thư mục trùng tên `MNM_Nhom04_CRUD_GioHang/` bên trong workspace là một checkout riêng; ứng dụng và các lệnh trong tài liệu này sử dụng thư mục gốc chứa README.
 
-## 05. Triển khai Symfony và quy tắc nghiệp vụ
+## 04. Triển khai Symfony và quy tắc nghiệp vụ
 
 `GioHangController` xử lý giỏ tạm/checkout; các controller `CartRead`, `CartEdit`, `CartReview`, `CartDelete` chia theo trách nhiệm. `CartService` kiểm tra số lượng, tồn kho, nonce và chuyển trạng thái. `CheckoutService` kiểm tra người nhận, điện thoại, phương thức hỗ trợ và giới hạn lưu trữ.
 
@@ -126,7 +111,7 @@ Chỉ giỏ **Chờ duyệt** được sửa/hủy. Admin duyệt mới trừ kh
 
 Checkout hiện hỗ trợ **COD + giao tiêu chuẩn miễn phí**. Họ tên, điện thoại, địa chỉ và lời nhắn được ghép vào `GIO_HANG_GHI_CHU NVARCHAR(255)`: nếu vượt sức chứa sẽ báo lỗi và giữ dữ liệu nhập, không cắt mất địa chỉ. Có thể gửi nhanh giỏ với ghi chú, không qua form giao nhận.
 
-## 06. Web routes chính
+## 05. Web routes chính
 
 | Method | Đường dẫn | Chức năng/quyền |
 |---|---|---|
@@ -147,7 +132,7 @@ Checkout hiện hỗ trợ **COD + giao tiêu chuẩn miễn phí**. Họ tên, 
 
 Đây là ứng dụng HTML/Twig, chưa có REST API. Chi tiết payload, redirect và mã lỗi nằm trong [báo cáo kỹ thuật](docs/CART_REPORT.md#06-web-routes-và-kết-quả-trả-về).
 
-## 07. Kiểm thử và bằng chứng
+## 06. Kiểm thử và bằng chứng
 
 ```powershell
 # PHPUnit, lint và kiểm tra dịch vụ không kết nối database
@@ -163,7 +148,7 @@ Kết quả thực tế ngày **28/10/2026**, môi trường PHP 8.4.26 / Symfon
 
 Kết quả mới nhất sau đồng bộ code: **79 test, 283 assertion** đạt, bao gồm thêm sách lỗi quay lại đúng bộ lọc/chi tiết và chặn URL chuyển hướng không hợp lệ; xem [log đồng bộ](docs/evidence/2026-10-28-pull-sync). Đợt trước sau migration VARCHAR(10)/điện thoại 10 chữ số đạt 72 test, 248 assertion; [log sau nâng cấp schema](docs/evidence/2026-10-28-member-schema) được giữ làm lịch sử.
 
-## 08. Demo chức năng
+## 07. Demo chức năng
 
 1. Đăng ký tài khoản tại `/dang-ky`, đăng nhập bằng username.
 2. Vào `/danh-muc`, tìm sách và thêm một cuốn hai lần để quan sát cộng số lượng.
@@ -174,7 +159,7 @@ Kết quả mới nhất sau đồng bộ code: **79 test, 283 assertion** đạ
 
 Ảnh và cách tạo lại nằm trong [hướng dẫn demo](docs/DEMO.md). Tài khoản/giỏ minh họa được tạo trong test và rollback; không thể đăng nhập tài khoản tạm sau khi test kết thúc.
 
-## 09. Cài đặt và chạy dự án
+## 08. Cài đặt và chạy dự án
 
 | Thành phần | Yêu cầu | Phiên bản đã chạy trên máy hiện tại |
 |---|---|---|
@@ -253,7 +238,7 @@ Khắc phục lỗi thường gặp:
 - Cache sau khi chuyển thư mục: `php bin/console cache:clear`; nếu CLI debug bị kẹt, dừng tiến trình PHP đang chạy rồi dùng `php bin/console cache:clear --no-debug`.
 - CSS/JS lỗi: chạy `importmap:install`, kiểm tra asset trả 200 và dùng đúng router `public/index.php`.
 
-## 10. Kết quả, hạn chế và hướng phát triển
+## 09. Kết quả, hạn chế và hướng phát triển
 
 Đã hoàn thành luồng Cart và quy trình duyệt cơ bản, kiểm tra phía server, phân quyền theo chủ giỏ, CSRF và transaction. Đợt cải tiến này bổ sung kiểm thử checkout, chặn số lượng không dương ngay tại service, nhận đủ miền mã sách SQL INT, kiểm tra điện thoại và bỏ việc cắt mất thông tin nhận hàng.
 
