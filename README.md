@@ -1,152 +1,180 @@
-# Nhà sách Nhóm 04 – Symfony CRUD Giỏ hàng
+# Quản Lý Sách (CRUD) – Bảng Giỏ Hàng | Nhà Sách Nhóm 04
 
-Symfony 7.4, PHP 8.2+, Twig/AssetMapper và Microsoft SQL Server. Khách hàng xem sách, tạo/sửa/hủy giỏ Chờ duyệt; Admin tìm kiếm, duyệt/từ chối và xóa giỏ Đã hủy/Từ chối. Đăng nhập chung bằng **tên đăng nhập**, không dùng email.
+Ứng dụng web **Quản lý sách (CRUD) – Bảng giỏ hàng (`MNM_Nhom04_CRUD_GioHang`)** được xây dựng theo kiến trúc **Model–View–Controller (MVC)** trên nền tảng **Symfony Framework v7.4.21** kết hợp với hệ quản trị cơ sở dữ liệu **Microsoft SQL Server**. Dự án được thực hiện trong khuôn khổ học phần **Phát triển ứng dụng web với mã nguồn mở** tại Trường Kỹ thuật và Công nghệ – Đại học Trà Vinh.
 
-## Cài đặt trên máy khác
+- **Đơn vị:** Trường Kỹ thuật và Công nghệ – Đại học Trà Vinh (TVU)
+- **Học phần:** Phát triển ứng dụng web với mã nguồn mở
+- **Lớp – Nhóm thực hiện:** DA23TTA – Nhóm 04
+- **Repository GitHub:** [https://github.com/tanphattv05/MNM_Nhom04_CRUD_GioHang.git](https://github.com/tanphattv05/MNM_Nhom04_CRUD_GioHang.git)
 
-1. Cài PHP 8.2+ và Composer; bật `pdo_sqlsrv`, `ctype`, `iconv` (nên có `mbstring`, `openssl`). Cài Microsoft ODBC Driver 18 for SQL Server. Kiểm tra đúng PHP mà terminal/server sử dụng:
+---
 
-```powershell
-php -v
-php --ini
-php --ri pdo_sqlsrv
-composer check-platform-reqs
+## 1. 🛠️ Công nghệ và Yêu cầu môi trường
+
+<p>
+  <img src="https://img.shields.io/badge/PHP-8.2%2B-777BB4?logo=php&logoColor=white" alt="PHP 8.2+">
+  <img src="https://img.shields.io/badge/Symfony-7.4-000000?logo=symfony&logoColor=white" alt="Symfony 7.4">
+  <img src="https://img.shields.io/badge/Microsoft-SQL%20Server-CC2927?logo=microsoftsqlserver&logoColor=white" alt="Microsoft SQL Server">
+  <img src="https://img.shields.io/badge/Twig-Template%20Engine-8BC34A?logo=twig&logoColor=white" alt="Twig Template Engine">
+  <img src="https://img.shields.io/badge/Composer-2.10%2B-885630?logo=composer&logoColor=white" alt="Composer 2.10+">
+</p>
+
+Để cài đặt và vận hành dự án trên máy cục bộ (Localhost), môi trường cần đáp ứng các yêu cầu sau:
+
+| Hạng mục | Yêu cầu |
+| --- | --- |
+| **💻 Ngôn ngữ lập trình** | PHP `>= 8.2` (khuyến nghị `PHP 8.2.12` CLI x64) |
+| **🧩 PHP Extensions bắt buộc** | `pdo_sqlsrv`, `sqlsrv`, `ctype`, `iconv`, `mbstring`, `openssl` |
+| **📦 Trình quản lý gói** | Composer `2.10.3` trở lên |
+| **🚀 Framework** | Symfony Framework `v7.4.21` (Long-Term Support) |
+| **🗄️ Hệ quản trị cơ sở dữ liệu** | Microsoft SQL Server (Tên CSDL: `BanSachDB`) |
+| **🔌 Trình điều khiển kết nối CSDL** | Microsoft ODBC Driver 18 for SQL Server |
+| **⚙️ Công cụ quản trị CSDL** | SQL Server Management Studio (SSMS) |
+| **🎨 Giao diện (Frontend)** | Twig Template Engine, Symfony AssetMapper, HTML5, CSS3, JavaScript |
+| **🧑‍💻 Công cụ lập trình khuyến nghị** | Visual Studio Code |
+
+---
+
+## 2. 🚀 Hướng dẫn cài đặt và khởi chạy dự án
+
+> 🧭 **Lộ trình:** Tải mã nguồn → Cài thư viện → Cấu hình CSDL → Khởi chạy → Kiểm thử
+
+### 📥 Bước 1: Tải mã nguồn từ GitHub
+
+Mở Terminal / PowerShell và thực thi lệnh sau để sao chép dự án về máy:
+
+```bash
+git clone https://github.com/tanphattv05/MNM_Nhom04_CRUD_GioHang.git
+cd MNM_Nhom04_CRUD_GioHang
 ```
 
-DLL PHP SQL Server phải khớp phiên bản PHP, TS/NTS và kiến trúc x64/x86. Không sao chép đường dẫn DLL của máy cũ.
+### 📦 Bước 2: Cài đặt các thư viện phụ thuộc
 
-2. Mở PowerShell tại thư mục dự án đã sao chép. Tạo `.env.local` (không commit) trước khi chạy Composer:
+Chạy Composer để tải đầy đủ các gói thư viện của Symfony vào thư mục `vendor/`:
 
-```dotenv
-APP_ENV=dev
-APP_DEBUG=1
-APP_SECRET=thay_bang_chuoi_ngau_nhien_rieng_cua_may_ban
-DATABASE_URL="mssql://localhost/BanSachDB"
-```
-
-Sinh secret bằng `php -r "echo bin2hex(random_bytes(32));"` rồi dán kết quả vào APP_SECRET. Windows Authentication dùng tài khoản Windows đang chạy PHP; tài khoản đó phải có quyền truy cập database.
-
-- Instance mặc định trên máy khác: `mssql://TEN_MAY/BanSachDB`.
-- Named instance: ví dụ `mssql://TEN_MAY%5CSQLEXPRESS/BanSachDB` (encode dấu `\` thành `%5C`), hoặc dùng host/cổng TCP SQL Server đã cấu hình.
-- SQL Authentication: `mssql://username:password@HOST:1433/BanSachDB`; URL-encode username/password có ký tự đặc biệt.
-
-Kết nối hiện tại được kiểm tra là `ACER\SQLEXPRESS`, database `BanSachDB`; không bắt buộc máy khác có cùng tên server. Cấu hình `config/packages/doctrine.yaml` đang dùng ODBC Driver 18, Encrypt=1 và TrustServerCertificate=1 cho máy phát triển. Khi triển khai thật, dùng chứng chỉ tin cậy, HTTPS, APP_ENV=prod, APP_DEBUG=0 và secret riêng.
-
-```powershell
+```bash
 composer install
-php bin/console importmap:install
-php bin/console doctrine:query:sql "SELECT DB_NAME() AS database_name, @@SERVERNAME AS server_name"
 ```
 
-## Database và hai migration
+### 🔐 Bước 3: Cấu hình biến môi trường kết nối CSDL
 
-**Máy đã có dữ liệu:** sao lưu Full Backup trong SSMS, kiểm tra bản sao lưu; không chạy lại SQL khởi tạo hoặc `setup.ps1 -Reset`. File SQL khởi tạo có lệnh tạo lại bảng và sẽ làm mất dữ liệu cũ.
+1. 🔒 Sao chép tệp `.env` thành tệp `.env.local` để cấu hình riêng cho máy cá nhân (không đẩy mật khẩu thực lên GitHub):
+   ```bash
+   copy .env .env.local
+   ```
+2. 🔧 Mở tệp `.env.local` và chỉnh sửa chuỗi kết nối `DATABASE_URL` phù hợp với cấu hình Microsoft SQL Server trên máy của bạn:
+   ```env
+   DATABASE_URL="sqlsrv://sa:YOUR_PASSWORD@127.0.0.1:1433/BanSachDB?TrustServerCertificate=1& encrypt=0"
+   ```
 
-**Máy mới chưa có BanSachDB:** ưu tiên restore bản backup dự án. Hoặc khởi tạo dữ liệu demo đúng một lần bằng `database/BansachDB_Full_CoDuLieu.sql` trong SSMS, trên đúng server và database mới. `database/setup.ps1` chỉ hỗ trợ instance mặc định local (`-S .`), mặc định dừng nếu database đã tồn tại; không dùng nó cho named instance mà chưa điều chỉnh server.
+### 🗄️ Bước 4: Khởi tạo Cơ sở dữ liệu và chạy Migration
 
-Hai migration hiện có:
+1. 🧱 Mở **SQL Server Management Studio (SSMS)**, khởi tạo cơ sở dữ liệu có tên **`BanSachDB`** và chạy các tập tin kịch bản SQL trong thư mục `database/` để tạo bảng và dữ liệu mẫu.
+2. 🔄 Thực thi lệnh Doctrine Migrations để đồng bộ cấu trúc bảng (nếu cần):
+   ```bash
+   php bin/console doctrine:migrations:migrate
+   ```
 
-| Migration | Thay đổi |
-|---|---|
-| Version20261026000100 | Thêm username VARCHAR(30) duy nhất, tạo tên `user_<mã>` cho dữ liệu cũ; giữ khóa INT và quan hệ giỏ |
-| Version20261026000200 | Thêm lý do từ chối NVARCHAR(255), tách khỏi ghi chú khách hàng |
+### ▶️ Bước 5: Khởi chạy máy chủ phát triển (Local Web Server)
 
-```powershell
-php bin/console doctrine:migrations:status
-php bin/console doctrine:migrations:list
-php bin/console doctrine:migrations:migrate --dry-run
-```
+Chạy máy chủ tích hợp sẵn của PHP trỏ vào thư mục `public/`:
 
-Đọc SQL dry-run và sao lưu trước khi **chủ động** áp dụng migration còn thiếu:
-
-```powershell
-php bin/console doctrine:migrations:migrate
-```
-
-Nếu đã có cột nhưng migration chưa được ghi nhận, dừng để đối chiếu schema và bảng `doctrine_migration_versions`; không chạy lại ALTER hoặc tự đánh dấu migration đã chạy. Cả hai migration đều không hỗ trợ rollback xuống vì sẽ mất username/lý do từ chối. Không dùng `schema:update --force` hoặc `schema:drop`.
-
-Kiểm tra ngày 27/10/2026 trên workspace: 2 migration đã thực thi, 0 migration mới; không áp dụng migration trong đợt kiểm thử.
-
-## Tài khoản và đăng nhập
-
-- Trang chung `/dang-nhap` nhận tên đăng nhập và mật khẩu, tự điều hướng theo ROLE_USER/ROLE_ADMIN. `/admin/dang-nhap` chỉ chuyển về trang chung.
-- Khách mới đăng ký tại `/dang-ky`. Email chỉ là thông tin liên hệ. Username không trùng tên Admin, không phân biệt chữ hoa/thường.
-- Dữ liệu mẫu sau migration có username `user_1001`…`user_1005`, Admin `admin`. Tài khoản đã đổi username dùng tên hiện tại.
-- Mật khẩu văn bản trong SQL mẫu không được chấp nhận để đăng nhập; tài khoản mới được hash ngay. Không đặt lại mật khẩu thật chỉ để chạy demo.
-
-Lệnh chỉ kiểm tra (không ghi):
-
-```powershell
-php bin/console app:account:password user 1001
-php bin/console app:account:password admin admin
-```
-
-Sau sao lưu và xác nhận đúng tài khoản demo, chuyển mật khẩu hiện có sang hash; lệnh bỏ qua tài khoản đã hash, không in mật khẩu:
-
-```powershell
-php bin/console app:account:password user 1001 --convert-legacy --apply
-php bin/console app:account:password admin admin --convert-legacy --apply
-```
-
-Hoặc đặt mật khẩu riêng bằng nhập ẩn: `php bin/console app:account:password admin admin --apply`. Các lệnh ghi mật khẩu chỉ hoạt động trong dev, từng tài khoản được chỉ định; không tự chạy khi khởi động.
-
-## Chạy và sử dụng
-
-```powershell
-php bin/console cache:clear
+```bash
 php -S 127.0.0.1:8000 -t public public/index.php
 ```
 
-Mở http://127.0.0.1:8000/ (hoặc `/home`). CSS/JS do AssetMapper phục vụ qua `/assets/…`; không mở file Twig trực tiếp.
+Sau khi khởi chạy thành công, mở trình duyệt và truy cập vào địa chỉ:
 
-| Vai trò | Đường dẫn |
-|---|---|
-| Khách hàng | `/trang-chu`, `/danh-muc`, `/gio-hang`, `/gio-hang/lich-su`, `/tai-khoan` |
-| Admin | `/admin/dashboard`, `/admin/gio-hang` |
+- **Trang chủ ứng dụng:** `http://127.0.0.1:8000`
 
-Giỏ mới Chờ duyệt không trừ kho. Chỉ giỏ Chờ duyệt được sửa/hủy; Admin duyệt mới trừ kho, duyệt lại không trừ lần hai. Từ chối lưu lý do riêng và không trừ kho. Admin chỉ xóa giỏ Đã hủy/Từ chối, xóa dòng MUA cùng transaction. Giá lịch sử chưa lưu riêng: màn hình lịch sử ghi rõ tổng tính theo giá sách hiện tại. Tiền hiển thị kiểu `85.000 ₫`.
+### 🧪 Bước 6: Kiểm tra giao diện và chạy kiểm thử (Tùy chọn)
 
-## Kiểm thử
+Kiểm tra cú pháp các tập tin giao diện Twig và chạy bộ kiểm thử tự động PHPUnit:
 
-Chỉ chạy các test ghi dữ liệu trên database phát triển đã sao lưu, khi không có người khác đồng thời sửa dữ liệu. Không chạy smoke test trên production. Không có test nào được xem là PASS khi thiếu kết nối.
-
-```powershell
-php vendor/phpunit/phpunit/phpunit --no-progress
-php tests/phase5_smoke.php
-php tests/phase6_smoke.php
-php tests/money_smoke.php
-php tests/password_input_smoke.php
-php tests/phase2_smoke.php
-php tests/phase3_smoke.php
-php tests/phase4_smoke.php
-php tests/logout_smoke.php
-php tests/phase7_smoke.php
+```bash
 php bin/console lint:twig templates
-php bin/console lint:yaml config
-php bin/console lint:container
+php bin/phpunit
 ```
 
-Kết quả đã chạy ngày 27/10/2026:
+---
 
-| Nhóm | Kết quả và phạm vi |
-|---|---|
-| PHPUnit | 38 test, 163 assertion; connection giả lập, không chứng minh hành vi SQL Server |
-| phase5/phase6 | 49/47 kiểm tra dịch vụ giả lập: trạng thái, phân quyền, rollback và thứ tự khóa |
-| money/password_input | 18 kiểm tra tiền; kiểm tra nhập mật khẩu terminal giả lập, không đọc/ghi DB |
-| phase2 | 60 kiểm tra đăng ký, đăng nhập chung, xung đột tên Admin/User, hồ sơ, CSRF, đổi mật khẩu, throttling; SQL Server thật, rollback |
-| phase3 | 32 kiểm tra catalog/Create và rollback; SQL Server thật, lỗi dòng thứ hai được tiêm qua mock chuyển tiếp tới DB thật |
-| phase4 | 53 kiểm tra: 50 kiểm tra đọc/HTTP SQL Server thật, 3 kiểm tra Twig độc lập về NULL/XSS với hàm CSRF giả lập |
-| logout | 46 kiểm tra session/CSRF qua HTTP kernel, tài khoản nạp từ SQL Server thật; không ghi DB |
-| phase7 | 31 kiểm tra CRUD/duyệt/từ chối/hủy/xóa, chống ID quá lớn, trừ kho đúng một lần, rollback sau trừ kho dòng đầu; SQL Server thật |
+## 3. ✨ Các chức năng chính của hệ thống
 
-phase2/phase3/phase7 dùng transaction ngoài và rollback; phase7 so sánh fingerprint cả sáu bảng nghiệp vụ cùng bảng version migration trước/sau. Không xóa giỏ cũ; thao tác xóa chỉ dùng giỏ tạm tạo trong test. phase2 có thể thử migration username trong transaction nếu thiếu cột; vì vậy luôn kiểm tra trạng thái migration trước khi chạy. Trong lần kiểm thử này schema đã đầy đủ.
+Hệ thống triển khai đầy đủ quy trình **CRUD** trên bảng **`GIO_HANG`** (kết hợp cùng bảng chi tiết **`MUA`** và bảng **`SACH`**), đi kèm cơ chế xác thực và phân quyền chặt chẽ giữa **Khách hàng (`THANH_VIEN`)** và **Quản trị viên (`QTV`)**:
 
-Đã kiểm tra Chrome headless ở 390/768/1440px với snapshot HTML thật của catalog, chi tiết, sửa và Admin: CSS được tải, không tràn ngang toàn trang; bảng chi tiết cuộn ngang trong vùng riêng. Snapshot dùng trang render từ SQL Server trong test rollback, không phải dữ liệu thay thế. Chưa thao tác toàn bộ biểu mẫu trực tiếp trong trình duyệt thật. KernelBrowser kiểm tra HTTP trong tiến trình PHP. Kiểm thử SQL hiện chạy tuần tự; chưa kiểm thử tải nhiều kết nối cùng duyệt/sửa/hủy và chưa xác minh cài đặt trên một máy khác.
+<p>
+  <img src="https://img.shields.io/badge/Create-T%E1%BA%A1o%20gi%E1%BB%8F%20h%C3%A0ng-2E8B57?style=for-the-badge" alt="Create - Tạo giỏ hàng">
+  <img src="https://img.shields.io/badge/Read-Xem%20gi%E1%BB%8F%20h%C3%A0ng-1E90FF?style=for-the-badge" alt="Read - Xem giỏ hàng">
+  <img src="https://img.shields.io/badge/Update-C%E1%BA%ADp%20nh%E1%BA%ADt-F4A261?style=for-the-badge" alt="Update - Cập nhật">
+  <img src="https://img.shields.io/badge/Delete-H%E1%BB%A7y%20v%C3%A0%20x%C3%B3a-E63946?style=for-the-badge" alt="Delete - Hủy và xóa">
+</p>
 
-## Khi gặp lỗi
+### 🔐 3.1. Xác thực và Phân quyền (Authentication & Authorization)
 
-- `could not find driver`: đối chiếu `php --ini`, `php --ri pdo_sqlsrv`; khởi động lại server sau khi bật DLL.
-- Không kết nối SQL: kiểm tra instance, port/TCP, Windows user chạy PHP, chứng chỉ và DATABASE_URL; không sửa bằng cách tạo lại database.
-- Thiếu username/lý do từ chối: xem trạng thái và schema của hai migration, thực hiện theo mục migration.
-- CSS/JS lỗi: chạy `importmap:install`, kiểm tra `/assets/…` trả đúng CSS/JS và server dùng `public/index.php`.
-- Đăng nhập thất bại: dùng username hiện tại; kiểm tra hash bằng lệnh chỉ đọc ở trên, không in mật khẩu ra log.
+- 📝 Đăng ký tài khoản thành viên mới và đăng nhập vào hệ thống.
+- 👥 Quản lý phiên đăng nhập và phân quyền truy cập theo vai trò:
+  - 🛍️ **Khách hàng (`THANH_VIEN`):** Xem sách, tạo giỏ hàng, quản lý các giỏ hàng của cá nhân.
+  - 🛡️ **Quản trị viên (`QTV`):** Quản lý toàn bộ giỏ hàng trên hệ thống, duyệt hoặc từ chối giỏ hàng của khách hàng.
+
+### 🛒 3.2. Tạo giỏ hàng mới – Create
+
+- 📚 Hiển thị danh mục sách trực quan, hỗ trợ tìm kiếm theo từ khóa và lọc sách.
+- ✅ Cho phép chọn sách đưa vào giỏ hàng, kiểm tra số lượng tồn kho hợp lệ.
+- 💰 Tự động tính thành tiền từng đầu sách, tổng tiền toàn bộ giỏ hàng và gửi giỏ hàng ở trạng thái **Chờ duyệt**.
+
+### 📋 3.3. Xem danh sách và Chi tiết giỏ hàng – Read
+
+- 🔎 Hiển thị danh sách giỏ hàng kèm bộ lọc trạng thái và thanh tìm kiếm.
+- 👤 Phân tách phạm vi dữ liệu: Khách hàng chỉ xem được giỏ hàng của mình; Quản trị viên xem và tra cứu được toàn bộ giỏ hàng trong hệ thống.
+- 🧾 Xem chi tiết từng giỏ hàng: thông tin người mua, thời gian tạo, trạng thái xử lý, danh sách các sách đã chọn trong bảng `MUA`, số lượng, đơn giá và tổng tiền.
+
+### ✏️ 3.4. Cập nhật và Xử lý trạng thái giỏ hàng – Update
+
+- **📝 Cập nhật thông tin giỏ hàng:** Cho phép chỉnh sửa thông tin nhận hàng, thay đổi số lượng sách hoặc thêm/bớt sách khi giỏ hàng đang ở trạng thái cho phép chỉnh sửa.
+- **✅ Duyệt / Từ chối giỏ hàng (Dành cho Quản trị viên):** Xác nhận **Duyệt** đơn giỏ hàng hoặc **Từ chối** kèm theo lý do phản hồi cụ thể cho khách hàng.
+
+### 🗑️ 3.5. Hủy và Xóa giỏ hàng – Delete
+
+- 🚫 Cho phép Khách hàng hủy giỏ hàng hoặc xóa bản ghi giỏ hàng theo điều kiện trạng thái nghiệp vụ.
+- 🔗 Đảm bảo tính toàn vẹn dữ liệu tham chiếu giữa bảng `GIO_HANG` và bảng chi tiết `MUA` khi thực hiện thao tác xóa.
+
+---
+
+## 4. 📁 Cấu trúc thư mục dự án
+
+```text
+MNM_Nhom04_CRUD_GioHang/
+├── assets/                 # Tài nguyên Frontend quản lý qua Symfony AssetMapper
+├── bin/                    # Tập tin thực thi dòng lệnh (bin/console, bin/phpunit)
+├── config/                 # Cấu hình hệ thống, paquetes (packages), routes và bảo mật
+├── database/               # Các tập tin script SQL khởi tạo CSDL BanSachDB và dữ liệu mẫu
+├── migrations/             # Các lớp quản lý phiên bản cấu trúc cơ sở dữ liệu
+├── public/                 # Thư mục gốc Web Server (chứa index.php, CSS, JS, hình ảnh)
+├── src/                    # Mã nguồn xử lý chính của ứng dụng theo mô hình MVC
+│   ├── Controller/         # Tầng Controller điều phối Request/Response (Route Attributes)
+│   ├── Entity/             # Các lớp thực thể ánh xạ dữ liệu
+│   ├── Repository/         # Tầng truy xuất dữ liệu SQL Server (Account, Book, Cart)
+│   ├── Security/           # Xử lý xác thực đăng nhập và kiểm soát phân quyền
+│   ├── Service/            # Tầng xử lý logic nghiệp vụ giỏ hàng (CartService)
+│   └── Kernel.php          # Hạt nhân khởi chạy ứng dụng Symfony
+├── templates/              # Tầng View chứa các tập tin giao diện Twig (.html.twig)
+├── tests/                  # Các kịch bản kiểm thử chức năng tự động
+├── var/                    # Chứa bộ nhớ đệm (cache) và nhật ký hệ thống (log)
+├── .env                    # Cấu hình biến môi trường mặc định
+├── composer.json           # Khai báo các gói thư viện phụ thuộc của PHP
+└── README.md               # Tài liệu hướng dẫn tổng quan của dự án
+```
+
+---
+
+## 5. 👥 Danh sách thành viên và Phân công nhiệm vụ (Nhóm 04 – DA23TTA)
+
+| STT | Họ và tên | MSSV | Vai trò | Nhiệm vụ phân công |
+| :-: | :--- | :---: | :---: | :--- |
+| 1 | **Huỳnh Dương Tấn Phát** | 110123038 | Trưởng nhóm | Xây dựng chức năng đăng ký, đăng nhập, phân quyền và tạo giỏ hàng (Create) |
+| 2 | **Phạm Bá Hạo Long** | 110123024 | Thư ký | Biên soạn và hoàn thiện tài liệu hướng dẫn kỹ thuật Hands-on |
+| 3 | **Cao Á Châu** | 110123206 | Thành viên | Chuẩn bị và cấu hình cơ sở dữ liệu SQL Server |
+| 4 | **Trần Hoàng Oanh** | 110123037 | Thành viên | Xây dựng chức năng xem danh sách, tìm kiếm và chi tiết giỏ hàng (Read) |
+| 5 | **Võ Thị Kiều Nhi** | 110123033 | Thành viên | Xây dựng chức năng cập nhật, duyệt và từ chối giỏ hàng (Update) |
+| 6 | **Trần Vũ Ngọc Huỳnh** | 110123012 | Thành viên | Xây dựng chức năng hủy và xóa giỏ hàng (Delete) |
+| 7 | **Nguyễn An Ninh** | 110123036 | Thành viên | Hoàn thiện giao diện và kiểm thử hệ thống |
