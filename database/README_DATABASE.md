@@ -88,12 +88,61 @@ php -S 127.0.0.1:8000 -t public public/index.php
 
 Mở http://127.0.0.1:8000/. PHP cần `pdo_sqlsrv` và Microsoft ODBC Driver 18. Cấu hình riêng dùng `.env.local` với `DATABASE_URL="mssql://localhost/BanSachDB"` cho instance mặc định và Windows Authentication.
 
+### Tạo tài khoản Admin cho database mới
+
+Hai tệp khởi tạo không tạo tài khoản mẫu. Để có tài khoản quản trị trên database mới, thực hiện:
+
+1. Mở **New Query** trong SSMS và tạo bản ghi Admin bằng lệnh sau. Giá trị `!CHUA_DAT_MAT_KHAU` là dấu tạm, chưa dùng để đăng nhập:
+
+```sql
+USE [BanSachDB];
+GO
+
+INSERT INTO dbo.QTV (QTV_USER_ADMIN, QTV_HO_TEN, QTV_EMAIL, QTV_MAT_KHAU)
+VALUES ('admin', N'Quản trị viên', NULL, '!CHUA_DAT_MAT_KHAU');
+GO
+```
+
+2. Trong terminal tại thư mục dự án, chạy lệnh dưới và nhập mật khẩu mới hai lần theo yêu cầu. Mật khẩu cần dài 8–72 ký tự, tối đa 72 byte; ứng dụng nhập ẩn và tự hash trước khi lưu:
+
+```powershell
+php bin/console app:account:password admin admin --apply
+```
+
+3. Khi website đang chạy, mở http://127.0.0.1:8000/admin/dang-nhap, đăng nhập bằng tên `admin` và mật khẩu đã chọn ở bước 2.
+
+Chỉ thực hiện bước INSERT khi tên `admin` chưa tồn tại trong bảng `QTV`. Lệnh đặt mật khẩu chạy trong môi trường `dev` và thay dấu tạm bằng hash hợp lệ. Nếu tên Admin đã tồn tại, bỏ qua bước INSERT và dùng hướng dẫn bên dưới.
+
+Khách hàng có thể tạo tài khoản tại http://127.0.0.1:8000/dang-ky. Dữ liệu loại sách cần nhập vào `LOAI_SACH` trước khi nhập sách vào `SACH`; các tệp cài mới chỉ tạo cấu trúc bảng.
+
+### Tài khoản có sẵn trong database cũ
+
+Nếu Admin `admin` đã tồn tại, lệnh sau chỉ kiểm tra mật khẩu đã được hash hay chưa:
+
+```powershell
+php bin/console app:account:password admin admin
+```
+
+Để đặt mật khẩu mới cho tài khoản này trong môi trường `dev`, chạy lệnh dưới rồi nhập mật khẩu hai lần khi được yêu cầu. Lệnh dùng chế độ nhập ẩn và chỉ cập nhật tài khoản đã tồn tại:
+
+```powershell
+php bin/console app:account:password admin admin --apply
+```
+
+Nếu tài khoản mẫu cũ đang lưu mật khẩu văn bản và cần giữ nguyên mật khẩu đó, sao lưu trước rồi chuyển sang hash bằng:
+
+```powershell
+php bin/console app:account:password admin admin --convert-legacy --apply
+```
+
+Thay tên `admin` cuối lệnh bằng tên quản trị viên thực tế. Với tài khoản khách, dùng `user <mã_thành_viên>` thay cho `admin <tên_quản_trị>`.
+
 ## D. Xác minh ngày 28/10/2026
 
 - Đã tạo bản sao lưu SQL Server COPY_ONLY, có CHECKSUM, và chạy `RESTORE VERIFYONLY` thành công trước nâng cấp.
 - Đã thử migration trong transaction rồi rollback trên SQL Server thật, kiểm tra kiểu dữ liệu, sáu FK, PK ghép, provider và CRUD giỏ với mã thành viên có chữ.
-- Đã áp dụng `Version20261028000100` vào BanSachDB. Số thử 11 chữ số của tài khoản `gggg` được đổi sang `0000000000` theo xác nhận của người dùng.
-- So sánh fingerprint đã chuẩn hóa INT thành chuỗi xác nhận mọi dữ liệu khác giữ nguyên: 6 thành viên, 1 QTV, 50 sách, 10 loại, 12 giỏ và 27 dòng MUA ở thời điểm nâng cấp.
+- Đã áp dụng `Version20261028000100` vào BanSachDB sau khi kiểm tra và chuẩn hóa dữ liệu điện thoại chưa hợp lệ.
+- So sánh fingerprint đã chuẩn hóa INT thành chuỗi xác nhận dữ liệu ngoài phần điện thoại được hiệu chỉnh giữ nguyên: 6 thành viên, 1 QTV, 50 sách, 10 loại, 12 giỏ và 27 dòng MUA ở thời điểm nâng cấp.
 - Schema cài mới đã được kiểm tra ở database riêng `BanSachDB_SchemaCheck_20261028_4905f658`, đủ bốn migration baseline; đăng ký và tạo giỏ bằng khóa chuỗi hoạt động. Fixture được rollback, sáu bảng nghiệp vụ để rỗng và database thử được giữ lại.
 
 Bằng chứng kiểm thử được lưu ở [docs/evidence/2026-10-28-member-schema](../docs/evidence/2026-10-28-member-schema). Nội dung trình bày báo cáo mục 1.1–1.3: [DATABASE_REPORT.md](../docs/DATABASE_REPORT.md).

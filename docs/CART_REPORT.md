@@ -163,31 +163,110 @@ Với báo cáo hội đồng, nên demo trực tiếp một giỏ mới: đối
 
 ## 09. Cài đặt và vận hành
 
-[README mục 08](../README.md#08-cài-đặt-và-chạy-dự-án) là hướng dẫn chính; [README_DATABASE](../database/README_DATABASE.md) phân biệt cài mới/nâng cấp. Môi trường xác minh là PHP 8.4.26, `pdo_sqlsrv` 5.13.3, Symfony 7.4.21 và instance SQL Server mặc định local. Không yêu cầu máy khác dùng cùng tên host.
+Quy trình dưới đây dành cho người cài đặt dự án lần đầu trên Windows. Hệ thống sử dụng Symfony, Doctrine DBAL và Microsoft SQL Server. Thực hiện các lệnh PowerShell tại thư mục gốc chứa `composer.json` và `bin/console`.
 
-Trạng thái migration hiện tại ngày 28/10: 4 executed, 4 available, 0 new. Đã sao lưu COPY_ONLY và kiểm tra RESTORE VERIFYONLY trước khi áp dụng migration đổi mã thành viên/điện thoại; chạy thử migration trong transaction rồi rollback trước lần áp dụng thật. Số thử 11 chữ số của tài khoản `gggg` được đổi sang `0000000000` theo xác nhận. Fingerprint chuẩn hóa xác nhận các dữ liệu khác và giá trị mã liên kết được giữ nguyên. `.env.local` sinh riêng cho máy và bị Git bỏ qua.
+### Bước 1. Chuẩn bị môi trường và cài thư viện
 
-Phần văn bản có thể đưa trực tiếp vào báo cáo gồm [1.1 Thiết kế GIO_HANG, 1.2 Tạo cơ sở dữ liệu và 1.3 Cấu hình môi trường](DATABASE_REPORT.md).
-
-Tài khoản SQL mẫu cũ có thể chứa mật khẩu văn bản. Không tự reset tài khoản thật để demo. Kiểm tra trước bằng lệnh chỉ đọc:
+Cài PHP từ 8.2, Composer 2, SQL Server từ 2017, SQL Server Management Studio (SSMS), Microsoft ODBC Driver 18 và extension PHP `pdo_sqlsrv`. Kiểm tra PHP và cài thư viện:
 
 ```powershell
-php bin/console app:account:password user 1001
-php bin/console app:account:password admin admin
+php -v
+php --ri pdo_sqlsrv
+composer install
+composer check-platform-reqs
 ```
 
-Sau sao lưu và chọn đúng tài khoản mẫu được phép, chuyển mật khẩu hiện có thành hash bằng `… user 1001 --convert-legacy --apply` hoặc `… admin admin --convert-legacy --apply`. Lệnh bỏ qua tài khoản đã hash, không in mật khẩu, chỉ ghi trong dev. Đặt mật khẩu riêng bằng `php bin/console app:account:password admin admin --apply` với nhập ẩn. Việc này là thao tác vận hành chủ động, không chạy khi web khởi động.
+### Bước 2. Tạo cơ sở dữ liệu trong SSMS
+
+1. Khởi động dịch vụ SQL Server, mở SSMS và kết nối bằng tài khoản có quyền tạo database.
+2. Chọn **File → Open → File**, mở `database/BanSachDB_Full.sql` trong mã nguồn.
+3. Kiểm tra tên database là `BanSachDB`, sau đó nhấn **Execute (F5)** để chạy toàn bộ tệp.
+4. Trong Object Explorer, nhấn **Refresh**, mở `Databases → BanSachDB → Tables` để xem các bảng vừa tạo.
+
+Tệp SQL tự tạo database, sáu bảng nghiệp vụ, các ràng buộc và bảng `doctrine_migration_versions`. Với cách này, không tạo database trước khi chạy tệp. Kết quả cuối tệp cần hiển thị `created_database = BanSachDB`, `business_tables = 6` và `baselined_migrations = 4`.
+
+Nếu muốn tự chạy `CREATE DATABASE` và `USE`, dùng phương án thủ công tại [mục 1.2 của báo cáo database](DATABASE_REPORT.md#12-tạo-cơ-sở-dữ-liệu), rồi chạy `database/BanSachDB_SchemaOnly.sql`. Chỉ chọn một trong hai cách tạo mới.
+
+Mở **New Query** trong SSMS và kiểm tra:
+
+```sql
+USE [BanSachDB];
+GO
+
+SELECT DB_NAME() AS TenCoSoDuLieu;
+
+SELECT name AS TenBang
+FROM sys.tables
+WHERE schema_id = SCHEMA_ID(N'dbo')
+ORDER BY name;
+```
+
+### Bước 3. Cấu hình kết nối của ứng dụng
+
+Nếu chưa có `.env.local`, tạo tệp này từ `.env.local.example`. Điền cấu hình phù hợp với SQL Server trên máy:
+
+```dotenv
+APP_ENV=dev
+APP_DEBUG=1
+APP_SECRET=thay_bang_chuoi_ngau_nhien_cua_may_ban
+DATABASE_URL="mssql://localhost/BanSachDB"
+```
+
+Sinh chuỗi ngẫu nhiên bằng lệnh sau rồi chép kết quả vào `APP_SECRET`:
+
+```powershell
+php -r "echo bin2hex(random_bytes(32));"
+```
+
+Ví dụ trên dùng instance SQL Server mặc định và Windows Authentication. Tài khoản Windows chạy PHP cần có quyền truy cập `BanSachDB`. Nếu dùng named instance, ví dụ `TEN_MAY\SQLEXPRESS`, điều chỉnh URL thành `mssql://TEN_MAY%5CSQLEXPRESS/BanSachDB`. Cấu hình riêng trong `.env.local` được Git bỏ qua.
+
+### Bước 4. Kiểm tra kết nối và migration
+
+```powershell
+php bin/console doctrine:query:sql "SELECT DB_NAME() AS database_name"
+php bin/console doctrine:migrations:status
+```
+
+Kết nối đúng trả về `database_name = BanSachDB`. Với các tệp cài mới hiện tại, trạng thái mong đợi là **Executed=4, Available=4, New=0** vì script đã tạo schema và ghi nhận đủ bốn migration. Khi `New=0`, chuyển sang bước 5.
+
+Nếu sử dụng database từ phiên bản cũ, làm theo [hướng dẫn nâng cấp database](../database/README_DATABASE.md#b-nâng-cấp-database-đã-có-dữ-liệu): sao lưu, kiểm tra bản sao lưu và SQL dự kiến trước khi chạy migration còn thiếu. Không chạy lại tệp khởi tạo trên database đã có dữ liệu.
+
+### Bước 5. Chạy website và đăng nhập
+
+```powershell
+php bin/console importmap:install
+php bin/console cache:clear
+php -S 127.0.0.1:8000 -t public public/index.php
+```
+
+Mở **http://127.0.0.1:8000/**, giữ terminal chạy server và nhấn `Ctrl+C` khi muốn dừng. Có thể tạo tài khoản khách tại `/dang-ky`, sau đó đăng nhập tại `/dang-nhap`.
+
+Database cài mới chưa có sách hoặc tài khoản mẫu. Để sử dụng khu vực quản trị, thực hiện [hướng dẫn tạo Admin cho database mới](../database/README_DATABASE.md#tạo-tài-khoản-admin-cho-database-mới); đăng nhập bằng tên và mật khẩu đã tự đặt. Dữ liệu loại sách và sách được nhập riêng vào `LOAI_SACH` và `SACH`; khi chưa có dữ liệu, danh mục hiển thị rỗng.
+
+Hướng dẫn tổng quan: [README mục 08](../README.md#08-cài-đặt-và-chạy-dự-án). Nội dung thiết kế bảng, hai cách tạo database và cấu hình môi trường dùng trong báo cáo: [DATABASE_REPORT.md](DATABASE_REPORT.md).
 
 ## 10. Đánh giá và hướng phát triển
 
-Đạt đủ 10 chức năng Cart trong checklist theo kiến trúc session + SQL Server hiện tại. Những cải tiến mới giải quyết sai lệch giữa giao diện checkout và xử lý server, loại bỏ cắt âm thầm dữ liệu nhận hàng và bổ sung bằng chứng có thể chạy lại.
+### 10.1. Kết quả đạt được
 
-Hạn chế cần nêu rõ:
+Hệ thống đã triển khai các nghiệp vụ quản lý giỏ hàng trong website bán sách, gồm thêm sách, cập nhật số lượng, xóa sách khỏi giỏ, xác nhận đặt hàng COD và xem lịch sử. Khách hàng có thể sửa hoặc hủy giỏ đang Chờ duyệt; quản trị viên có thể duyệt, từ chối và xóa giỏ theo quyền và trạng thái cho phép.
 
-- Chưa lưu đơn giá lúc đặt; lịch sử thay đổi tổng theo giá hiện tại. Ưu tiên thêm đơn giá bất biến trên dòng, dữ liệu giao nhận riêng và migration giữ tương thích.
-- Ghi nhận COD chưa có trạng thái thu tiền/giao hàng độc lập; chưa có gateway/callback, email hoặc phí hỏa tốc.
-- Giỏ nháp phụ thuộc session, mất sau logout/hết hạn; chưa đồng bộ nhiều thiết bị.
-- `MAX+1` có khóa bảng phù hợp quy mô đồ án nhưng giới hạn throughput; chưa đo tải lớn hoặc nhiều kết nối cạnh tranh.
-- Chưa có module quản lý sách/loại sách; chưa xác minh cài mới qua GUI SSMS trên máy khác trong đợt này.
+Ứng dụng được tổ chức theo mô hình MVC của Symfony, sử dụng Doctrine DBAL để truy vấn Microsoft SQL Server. Giỏ nháp được lưu trong session; giỏ đã gửi và các dòng sách được lưu trong `GIO_HANG` và `MUA`. Hệ thống kiểm tra dữ liệu đầu vào, quyền sở hữu giỏ, trạng thái xử lý và tồn kho phía server. Các thao tác ghi nhiều bước được thực hiện trong transaction để duy trì tính nhất quán của dữ liệu.
 
-Bài học: mô tả đúng DBAL/session đang dùng; không suy diễn từ kiến trúc tham khảo; kiểm tra giá/kho ở server và kiểm tra lại khi ghi; chỉ đánh dấu PASS khi có lần chạy và log tương ứng.
+Các kiểm thử đã thực hiện bao gồm xử lý nghiệp vụ, phân quyền, dữ liệu không hợp lệ và rollback khi ghi thất bại. Phạm vi, kết quả và bằng chứng kiểm thử được trình bày tại [test-cases.md](test-cases.md).
+
+### 10.2. Hạn chế
+
+- Chi tiết giỏ chưa lưu đơn giá tại thời điểm đặt. Tổng tiền trong lịch sử được tính theo giá sách hiện tại nên có thể thay đổi khi cập nhật giá.
+- Hệ thống chỉ hỗ trợ đặt hàng COD, chưa quản lý riêng trạng thái thu tiền và giao hàng, chưa tích hợp thanh toán trực tuyến hoặc email thông báo.
+- Giỏ nháp phụ thuộc session, không được giữ lại sau khi đăng xuất hoặc hết hạn và chưa đồng bộ giữa các thiết bị.
+- Chưa có giao diện quản lý sách, loại sách và cấu hình phí vận chuyển.
+- Hiệu năng khi có nhiều yêu cầu đồng thời chưa được đánh giá. Cơ chế cấp mã giỏ bằng `MAX+1` kết hợp khóa bảng cần được xem xét khi mở rộng hệ thống.
+
+### 10.3. Hướng phát triển
+
+- Bổ sung đơn giá tại thời điểm đặt và lưu riêng thông tin người nhận, địa chỉ giao hàng, phương thức thanh toán để quản lý lịch sử mua hàng.
+- Lưu giỏ nháp trong cơ sở dữ liệu theo tài khoản, hỗ trợ khôi phục sau khi đăng nhập lại và đồng bộ giữa các thiết bị.
+- Tích hợp thanh toán trực tuyến, quản lý trạng thái thanh toán, giao hàng và gửi email thông báo khi trạng thái thay đổi.
+- Xây dựng giao diện quản trị sách, loại sách, tồn kho và phí vận chuyển.
+- Kiểm thử tải và truy cập đồng thời; cải tiến cơ chế cấp mã, khóa dữ liệu và truy vấn để đáp ứng quy mô sử dụng lớn hơn.

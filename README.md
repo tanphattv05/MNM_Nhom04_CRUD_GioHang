@@ -171,15 +171,21 @@ Kết quả mới nhất sau đồng bộ code: **79 test, 283 assertion** đạ
 
 Bật `pdo_sqlsrv`, `ctype`, `iconv`; các extension còn lại được kiểm tra bằng Composer. DLL SQL Server phải khớp PHP, TS/NTS và x64/x86.
 
-Quy trình cài đặt theo Symfony: chạy `composer install`, tạo `.env.local` từ cấu hình mẫu, cấu hình `DATABASE_URL` và `APP_SECRET`, chuẩn bị database, kiểm tra/chạy Doctrine migration còn thiếu rồi khởi động PHP server.
+Thực hiện các bước dưới đây tại thư mục gốc chứa `composer.json` và `bin/console`.
+
+### Bước 1. Kiểm tra PHP và cài thư viện
 
 ```powershell
 php -v
 php --ini
 php --ri pdo_sqlsrv
+composer install
+composer check-platform-reqs
 ```
 
-Tạo `.env.local` riêng, không commit và không ghi đè file đã cấu hình. Tham khảo [.env.local.example](.env.local.example). Sinh secret bằng `php -r "echo bin2hex(random_bytes(32));"` rồi điền vào:
+### Bước 2. Tạo cấu hình riêng cho máy
+
+Nếu chưa có `.env.local`, tạo tệp này từ [.env.local.example](.env.local.example). Nếu tệp đã tồn tại, chỉnh các giá trị cần thiết trong tệp hiện có. Sinh secret bằng `php -r "echo bin2hex(random_bytes(32));"` rồi điền vào:
 
 File `.env` chung chỉ giữ `APP_ENV`, `APP_SECRET` và `DATABASE_URL`. `APP_DEBUG` trong ví dụ dưới là tùy chọn. Email và Messenger hiện được tắt vì nghiệp vụ chưa sử dụng; URL mặc định cho CLI nằm trong `config/packages/routing.yaml`.
 
@@ -192,43 +198,56 @@ DATABASE_URL="mssql://localhost/BanSachDB"
 
 `localhost` dùng instance mặc định và Windows Authentication của tài khoản chạy PHP. Named instance ví dụ `mssql://TEN_MAY%5CSQLEXPRESS/BanSachDB`; SQL Authentication dùng `mssql://username:password@HOST:1433/BanSachDB` và URL-encode ký tự đặc biệt. Cấu hình hiện tin cậy chứng chỉ local; production cần chứng chỉ tin cậy và tắt debug.
 
+### Bước 3. Tạo database bằng SSMS
+
+1. Khởi động SQL Server, mở SSMS và kết nối bằng tài khoản có quyền tạo database.
+2. Chọn **File → Open → File**, mở `database/BanSachDB_Full.sql`.
+3. Nhấn **Execute (F5)** để chạy toàn bộ tệp; không tạo database trước khi chạy tệp này.
+4. Nhấn **Refresh** trong Object Explorer, mở `Databases → BanSachDB → Tables` để kiểm tra.
+
+Tệp tự tạo database `BanSachDB`, sáu bảng nghiệp vụ, các ràng buộc và bảng theo dõi migration. Kết quả cuối tệp là `business_tables = 6`, `baselined_migrations = 4`. Database mới chưa có dữ liệu sách hoặc tài khoản.
+
+Nếu muốn tự chạy `CREATE DATABASE` và `USE` trong SSMS, chọn quy trình thủ công rồi chạy `database/BanSachDB_SchemaOnly.sql` để tạo bảng. Hai cách cài mới được mô tả đầy đủ tại [mục 1.2 của báo cáo](docs/DATABASE_REPORT.md#12-tạo-cơ-sở-dữ-liệu); chỉ chọn một cách.
+
+Nếu `BanSachDB` đã tồn tại và có dữ liệu, bỏ qua bước tạo mới và xem [hướng dẫn nâng cấp](database/README_DATABASE.md#b-nâng-cấp-database-đã-có-dữ-liệu). File `BansachDB_Full_CoDuLieu.sql` là dữ liệu/schema lịch sử, có lệnh xóa/tạo lại bảng; không dùng để nâng cấp database đang có dữ liệu.
+
+### Bước 4. Kiểm tra kết nối và migration
+
 ```powershell
-composer install
-composer check-platform-reqs
-php bin/console importmap:install
 php bin/console doctrine:query:sql "SELECT DB_NAME() AS database_name, @@SERVERNAME AS server_name"
 php bin/console doctrine:migrations:status
 ```
 
-**Database mới:** dùng `database/BanSachDB_Full.sql`, tạo schema hiện tại và baseline đủ bốn migration; từ chối tên database đã tồn tại. Không cần tạo database trước khi chạy file. Catalog rỗng cho đến khi nhập sách; tài khoản Admin do người vận hành tạo bằng mật khẩu hash. File `BansachDB_Full_CoDuLieu.sql` là dữ liệu/schema lịch sử, chưa có thay đổi mới và có lệnh xóa/tạo lại bảng; không dùng để nâng cấp database đang có dữ liệu.
+Kết nối đúng trả về `database_name = BanSachDB`. Sau khi cài mới bằng một trong hai tệp SQL hiện tại, trạng thái mong đợi là **Executed=4, Available=4, New=0**. Script đã ghi nhận đủ bốn migration nên khi `New=0`, chuyển sang bước 5.
 
-Nếu muốn tự chạy `CREATE DATABASE` và `USE` trong SSMS, chọn quy trình thủ công rồi chạy `database/BanSachDB_SchemaOnly.sql` để tạo bảng. Hai cách cài mới được mô tả đầy đủ tại [mục 1.2 của báo cáo](docs/DATABASE_REPORT.md#12-tạo-cơ-sở-dữ-liệu); chỉ chọn một cách.
-
-**Database đang có dữ liệu:** sao lưu, kiểm tra bản sao lưu; bỏ qua SQL khởi tạo/reset. Đối chiếu schema và SQL migration trước khi nâng cấp:
+Nếu còn migration mới trên database cũ, sao lưu và kiểm tra bản sao lưu trước, sau đó đối chiếu SQL dự kiến rồi áp dụng những migration còn thiếu:
 
 ```powershell
 php bin/console doctrine:migrations:list
 php bin/console doctrine:migrations:migrate --dry-run
 # Chỉ áp dụng migration còn thiếu sau khi đối chiếu schema và sao lưu
 php bin/console doctrine:migrations:migrate
+```
+
+### Bước 5. Khởi động website
+
+```powershell
+php bin/console importmap:install
 php bin/console cache:clear
 php -S 127.0.0.1:8000 -t public public/index.php
 ```
 
 Mở **http://127.0.0.1:8000/**. Giữ terminal chạy server; `Ctrl+C` để dừng. Không cần Node.js/npm. CSS/JS được phục vụ qua `/assets/…`.
 
-| Migration | Nội dung |
-|---|---|
-| `Version20261026000100` | Username thành viên, UNIQUE/CHECK, backfill `user_<id>` |
-| `Version20261026000200` | Lý do từ chối riêng, không ghi đè ghi chú khách |
-| `Version20261026000300` | Chủ giỏ liên kết thành viên, backfill từ MUA, Admin nullable |
-| `Version20261028000100` | Đổi khóa thành viên và hai FK liên quan sang VARCHAR(10); điện thoại VARCHAR(10), CHECK đúng 10 chữ số |
+### Bước 6. Tạo tài khoản và chuẩn bị dữ liệu
 
-Workspace đã áp dụng và kiểm tra **Executed=4, Available=4, New=0**. Migration mới giữ nguyên giá trị mã thành viên cũ dưới dạng chuỗi và khôi phục đầy đủ PK/FK/index. Số thử của tài khoản `gggg` được sửa thành `0000000000` theo xác nhận; các dữ liệu khác giữ nguyên. Đã tạo bản sao lưu COPY_ONLY và chạy RESTORE VERIFYONLY trước khi nâng cấp. Không dùng `schema:update --force` để sửa schema DBAL này.
+- **Khách hàng:** mở http://127.0.0.1:8000/dang-ky để đăng ký, sau đó đăng nhập tại `/dang-nhap`.
+- **Quản trị viên:** làm theo [hướng dẫn tạo Admin cho database mới](database/README_DATABASE.md#tạo-tài-khoản-admin-cho-database-mới), rồi đăng nhập tại `/admin/dang-nhap` bằng mật khẩu đã tự đặt.
+- **Sách:** nhập dữ liệu loại sách vào `LOAI_SACH` trước, sau đó nhập sách vào `SACH`. Catalog hiển thị rỗng khi chưa có dữ liệu; ứng dụng chưa có màn hình quản lý sách.
 
 `THANH_VIEN_TEN_DANG_NHAP` là khóa định danh **VARCHAR(10)**, độc lập với username đăng nhập `THANH_VIEN_USERNAME VARCHAR(30)`. Mã mới dạng `tv` + 8 ký tự hex; đổi username không làm đổi chủ giỏ. Điện thoại bắt buộc nhập đúng 10 chữ số ở đăng ký/hồ sơ/checkout, lưu chuỗi để giữ số 0 đầu; database cho phép NULL với dữ liệu cũ, nhưng không tự cắt số dài.
 
-Tài khoản mới tự hash mật khẩu. Không có mật khẩu demo được cam kết trong README; mật khẩu văn bản từ SQL cũ không đăng nhập được. Lệnh chỉ đọc `php bin/console app:account:password user 1001` hoặc `… admin admin` kiểm tra loại mật khẩu. Nếu cần chuyển đổi tài khoản mẫu được phép, xem [quy trình tài khoản](docs/CART_REPORT.md#09-cài-đặt-và-vận-hành).
+Tài khoản đăng ký trên web được tự hash mật khẩu. Với tài khoản có sẵn từ database cũ, xem [cách kiểm tra hoặc đổi mật khẩu](database/README_DATABASE.md#tài-khoản-có-sẵn-trong-database-cũ).
 
 Khắc phục lỗi thường gặp:
 
@@ -240,7 +259,7 @@ Khắc phục lỗi thường gặp:
 
 ## 09. Kết quả, hạn chế và hướng phát triển
 
-Đã hoàn thành luồng Cart và quy trình duyệt cơ bản, kiểm tra phía server, phân quyền theo chủ giỏ, CSRF và transaction. Đợt cải tiến này bổ sung kiểm thử checkout, chặn số lượng không dương ngay tại service, nhận đủ miền mã sách SQL INT, kiểm tra điện thoại và bỏ việc cắt mất thông tin nhận hàng.
+Website đã triển khai nghiệp vụ quản lý giỏ hàng, xác nhận đặt hàng COD và quy trình duyệt của quản trị viên. Ứng dụng kiểm tra dữ liệu phía server, phân quyền theo chủ giỏ, sử dụng CSRF và transaction cho các thao tác ghi dữ liệu. Đánh giá chi tiết và định hướng mở rộng được trình bày tại [mục 10 của báo cáo Cart](docs/CART_REPORT.md#10-đánh-giá-và-hướng-phát-triển).
 
 Hạn chế hiện tại và thứ tự phát triển đề xuất:
 

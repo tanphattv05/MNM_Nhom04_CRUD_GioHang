@@ -1,6 +1,6 @@
 # Sequence · Thêm sách và đặt hàng
 
-![Sequence thêm sách và đặt hàng](cart-sequence.png)
+[![Sequence thêm sách và đặt hàng](cart-sequence.png)](cart-sequence.png)
 
 [Ảnh PNG](cart-sequence.png) · [SVG vector](cart-sequence.svg). Ảnh trình bày luồng thành công và các quy tắc xử lý lỗi; khối Mermaid bên dưới mô tả thêm nhánh thất bại. Tạo lại ảnh bằng `python scripts/render_cart_diagrams.py` (cần matplotlib).
 

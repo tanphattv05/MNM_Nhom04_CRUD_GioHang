@@ -12,15 +12,15 @@ plt.rcParams.update({"font.family": "DejaVu Sans", "svg.fonttype": "none"})
 INK, BLUE, MUTED, LINE = "#19334f", "#2563a3", "#586b80", "#c0cedd"
 
 
-def canvas(width, height, title, subtitle):
+def canvas(width, height, title, subtitle, *, title_size=20, subtitle_size=10):
     fig, ax = plt.subplots(figsize=(width / 110, height / 110))
     fig.subplots_adjust(left=0, right=1, bottom=0, top=1)
     ax.set_xlim(0, width)
     ax.set_ylim(height, 0)
     ax.axis("off")
     fig.set_facecolor("white")
-    ax.text(55, 54, title, color=INK, fontsize=20, fontweight="bold")
-    ax.text(55, 90, subtitle, color=MUTED, fontsize=10)
+    ax.text(55, 54, title, color=INK, fontsize=title_size, fontweight="bold")
+    ax.text(55, 90, subtitle, color=MUTED, fontsize=subtitle_size)
     return fig, ax
 
 
@@ -28,6 +28,9 @@ def save(fig, name):
     for extension in ("png", "svg"):
         target = OUTPUT / f"{name}.{extension}"
         fig.savefig(target, dpi=180, facecolor="white")
+        if extension == "svg":
+            contents = target.read_text(encoding="utf-8")
+            target.write_text("\n".join(line.rstrip() for line in contents.splitlines()) + "\n", encoding="utf-8")
         print(target.relative_to(OUTPUT.parent.parent))
     plt.close(fig)
 
@@ -100,13 +103,14 @@ def use_case():
 
 
 def sequence():
-    fig, ax = canvas(2200,2180,"SEQUENCE · THÊM SÁCH VÀ ĐẶT HÀNG","Nhóm 04 · DA23TTA  |  Luồng thành công; các lỗi nghiệp vụ được xử lý và giữ giỏ để thử lại")
+    fig, ax = canvas(2200,2420,"SEQUENCE · THÊM SÁCH VÀ ĐẶT HÀNG","Nhóm 04 · DA23TTA  |  Luồng thành công; các lỗi nghiệp vụ được xử lý và giữ giỏ để thử lại",
+                     title_size=24, subtitle_size=13)
     lanes = [110,440,770,1100,1430,1760,2090]
     labels = ["Khách / Twig","Controller","CheckoutService","CartService","BookRepository","Session","SQL Server"]
     for x,label in zip(lanes,labels):
-        ax.add_patch(Rectangle((x-105,140),210,55,facecolor="#eaf2fc",edgecolor=LINE))
-        ax.text(x,168,label,ha="center",va="center",fontsize=9.5,color=BLUE,fontweight="bold")
-        ax.plot([x,x],[195,2020],color=LINE,linestyle="--",linewidth=1)
+        ax.add_patch(Rectangle((x-105,140),210,75,facecolor="#eaf2fc",edgecolor=LINE))
+        ax.text(x,178,label,ha="center",va="center",fontsize=14,color=BLUE,fontweight="bold")
+        ax.plot([x,x],[215,2230],color=LINE,linestyle="--",linewidth=1)
     messages = [
         (0,1,"POST thêm sách + CSRF",False),
         (1,3,"modify(user, bookId, quantity)",False),
@@ -132,15 +136,15 @@ def sequence():
         (1,0,"303 tới chi tiết giỏ Chờ duyệt",True),
     ]
     for index,(source,target,label,dashed) in enumerate(messages):
-        y=265+index*77
+        y=285+index*90
         ax.add_patch(FancyArrowPatch((lanes[source],y),(lanes[target],y),arrowstyle="->",mutation_scale=13,
                                     color=BLUE,linewidth=1.2,linestyle="--" if dashed else "-"))
-        wrapped=textwrap.fill(f"{index+1}. {label}",width=max(27,int(abs(lanes[target]-lanes[source])/9)))
-        ax.text((lanes[source]+lanes[target])/2,y-12,wrapped,ha="center",va="bottom",color=INK,fontsize=9,
+        wrapped=textwrap.fill(f"{index+1}. {label}",width=max(22,int(abs(lanes[target]-lanes[source])/13)))
+        ax.text((lanes[source]+lanes[target])/2,y-12,wrapped,ha="center",va="bottom",color=INK,fontsize=15,
                 bbox={"facecolor":"white","edgecolor":"none","pad":2})
-    ax.add_patch(Rectangle((55,2050),2090,85,facecolor="#f3f6fa",edgecolor=LINE))
-    ax.text(85,2082,"Khi nonce / tồn kho / dữ liệu không hợp lệ hoặc lỗi ghi: rollback nếu transaction đã mở, trả 422 và giữ giỏ.",fontsize=10,color=INK)
-    ax.text(85,2114,"Token CSRF sai trả 403. Thêm sách / gửi giỏ chưa trừ kho; Admin duyệt ở transaction riêng mới trừ kho.",fontsize=10,color=MUTED)
+    ax.add_patch(Rectangle((55,2270),2090,115,facecolor="#f3f6fa",edgecolor=LINE))
+    ax.text(85,2310,"Khi nonce / tồn kho / dữ liệu không hợp lệ hoặc lỗi ghi: rollback nếu transaction đã mở, trả 422 và giữ giỏ.",fontsize=14,color=INK)
+    ax.text(85,2355,"Token CSRF sai trả 403. Thêm sách / gửi giỏ chưa trừ kho; Admin duyệt ở transaction riêng mới trừ kho.",fontsize=14,color=MUTED)
     save(fig,"cart-sequence")
 
 

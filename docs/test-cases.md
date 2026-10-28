@@ -12,7 +12,7 @@ Các kết quả ở những mục tiếp theo thuộc các đợt kiểm tra tr
 
 ## Kết quả mới nhất: migration mã thành viên và điện thoại
 
-Ngày 28/10/2026 đã áp dụng `Version20261028000100`: mã thành viên ở THANH_VIEN/GIO_HANG/MUA là VARCHAR(10), điện thoại VARCHAR(10) với CHECK đúng 10 chữ số. Đã tạo backup COPY_ONLY, kiểm tra RESTORE VERIFYONLY, chạy thử migration trong transaction rồi rollback trước lần áp dụng thật. Số thử của tài khoản `gggg` được sửa theo xác nhận; fingerprint chuẩn hóa xác nhận các dữ liệu khác giữ nguyên.
+Ngày 28/10/2026 đã áp dụng `Version20261028000100`: mã thành viên ở THANH_VIEN/GIO_HANG/MUA là VARCHAR(10), điện thoại VARCHAR(10) với CHECK đúng 10 chữ số. Đã tạo backup COPY_ONLY, kiểm tra RESTORE VERIFYONLY, chạy thử migration trong transaction rồi rollback trước lần áp dụng thật. Dữ liệu điện thoại chưa hợp lệ được kiểm tra và chuẩn hóa trước nâng cấp; fingerprint chuẩn hóa xác nhận các dữ liệu khác giữ nguyên.
 
 Log đợt mới nhất nằm trong [evidence/2026-10-28-member-schema](evidence/2026-10-28-member-schema).
 
