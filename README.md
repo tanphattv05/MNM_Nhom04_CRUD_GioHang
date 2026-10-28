@@ -25,7 +25,7 @@ Module chính là **CRUD giỏ hàng**, có đăng ký/đăng nhập bằng **us
 **Nhóm 04 – Lớp DA23TTA**
 
 | STT | Họ và tên | MSSV | Vai trò | Nhiệm vụ phân công |
-|---|---|---|---|---|
+|------|---|---|---|---|
 | 1 | Huỳnh Dương Tấn Phát | 110123038 | Trưởng nhóm | Đăng ký, đăng nhập, phân quyền và tạo giỏ hàng (Create) |
 | 2 | Trần Hoàng Oanh | 110123037 | Thành viên | Danh sách, tìm kiếm và chi tiết giỏ hàng (Read) |
 | 3 | Cao Á Châu | 110123206 | Thành viên | Chuẩn bị và cấu hình cơ sở dữ liệu SQL Server |
