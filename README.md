@@ -196,6 +196,8 @@ php --ri pdo_sqlsrv
 
 Tạo `.env.local` riêng, không commit và không ghi đè file đã cấu hình. Tham khảo [.env.local.example](.env.local.example). Sinh secret bằng `php -r "echo bin2hex(random_bytes(32));"` rồi điền vào:
 
+File `.env` chung chỉ giữ `APP_ENV`, `APP_SECRET` và `DATABASE_URL`. `APP_DEBUG` trong ví dụ dưới là tùy chọn. Email và Messenger hiện được tắt vì nghiệp vụ chưa sử dụng; URL mặc định cho CLI nằm trong `config/packages/routing.yaml`.
+
 ```dotenv
 APP_ENV=dev
 APP_DEBUG=1
@@ -214,6 +216,8 @@ php bin/console doctrine:migrations:status
 ```
 
 **Database mới:** dùng `database/BanSachDB_Full.sql`, tạo schema hiện tại và baseline đủ bốn migration; từ chối tên database đã tồn tại. Không cần tạo database trước khi chạy file. Catalog rỗng cho đến khi nhập sách; tài khoản Admin do người vận hành tạo bằng mật khẩu hash. File `BansachDB_Full_CoDuLieu.sql` là dữ liệu/schema lịch sử, chưa có thay đổi mới và có lệnh xóa/tạo lại bảng; không dùng để nâng cấp database đang có dữ liệu.
+
+Nếu muốn tự chạy `CREATE DATABASE` và `USE` trong SSMS, chọn quy trình thủ công rồi chạy `database/BanSachDB_SchemaOnly.sql` để tạo bảng. Hai cách cài mới được mô tả đầy đủ tại [mục 1.2 của báo cáo](docs/DATABASE_REPORT.md#12-tạo-cơ-sở-dữ-liệu); chỉ chọn một cách.
 
 **Database đang có dữ liệu:** sao lưu, kiểm tra bản sao lưu; bỏ qua SQL khởi tạo/reset. Đối chiếu schema và SQL migration trước khi nâng cấp:
 

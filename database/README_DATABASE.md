@@ -14,7 +14,9 @@ Schema hiện tại của website dùng **Microsoft SQL Server**, database **Ban
 
 Các cột mã thành viên dùng cùng collation `Latin1_General_100_CI_AS`. Sách/giỏ/loại sách vẫn dùng khóa INT. `QTV_USER_ADMIN` giữ VARCHAR(60). Trạng thái, ghi chú và lý do từ chối của giỏ dùng NVARCHAR để lưu tiếng Việt.
 
-## A. Cài mới bằng BanSachDB_Full.sql
+## A. Cài mới: chọn một trong hai cách
+
+### Lựa chọn 1: Tạo database và schema tự động
 
 1. Trong SSMS, kết nối đúng SQL Server, mở `database/BanSachDB_Full.sql` ở cửa sổ query thông thường.
 2. Kiểm tra `DECLARE @DatabaseName sysname = N'BanSachDB';`. Chỉ chọn tên database chưa tồn tại; không cần tự tạo database trước.
@@ -23,6 +25,24 @@ Các cột mã thành viên dùng cùng collation `Latin1_General_100_CI_AS`. S�
 5. Cấu hình `DATABASE_URL` trong `.env.local`, kiểm tra bằng các lệnh ở mục C.
 
 File tổng hợp đã tích hợp schema của cả bốn migration và ghi nhận metadata baseline tương ứng. Không chạy lại các file migration đã baseline. Script không chứa dữ liệu sách, tài khoản, mật khẩu hoặc thông tin cá nhân; catalog ban đầu rỗng. Người vận hành tự cấp tài khoản Admin với mật khẩu đã hash và nhập dữ liệu sách được phép sử dụng.
+
+### Lựa chọn 2: Tạo database thủ công, sau đó tạo schema
+
+Chọn cách này thay cho lựa chọn 1 nếu muốn trực tiếp thực hiện CREATE DATABASE và USE trong SSMS:
+
+```sql
+USE [master];
+GO
+CREATE DATABASE [BanSachDB]
+COLLATE SQL_Latin1_General_CP1_CI_AS;
+GO
+USE [BanSachDB];
+GO
+```
+
+Tiếp theo chạy toàn bộ [BanSachDB_SchemaOnly.sql](BanSachDB_SchemaOnly.sql). Tệp chỉ tạo bảng/ràng buộc và baseline bốn migration trong database vừa tạo; không có lệnh CREATE DATABASE hoặc DROP TABLE. Kết quả giống lựa chọn 1: sáu bảng nghiệp vụ, bốn baseline, không có dữ liệu mẫu.
+
+Không chạy `BanSachDB_Full.sql` sau khi tạo database thủ công. Chỉ chọn một quy trình; database đang có bảng/dữ liệu phải dùng mục B để nâng cấp.
 
 Nếu lỗi schema sau khi database mới được tạo, transaction schema rollback; database mới có thể còn để kiểm tra. Script không tự xóa/reset database. File `BansachDB_Full_CoDuLieu.sql` và `setup.ps1` là quy trình demo lịch sử, chưa có schema mới; không dùng để nâng cấp database hiện tại.
 

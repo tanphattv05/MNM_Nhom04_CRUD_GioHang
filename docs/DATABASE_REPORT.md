@@ -36,19 +36,43 @@ Các trường chứa nội dung tiếng Việt sử dụng NVARCHAR để hỗ 
 
 ## 1.2. Tạo cơ sở dữ liệu
 
-Hệ thống sử dụng Microsoft SQL Server để lưu trữ dữ liệu và SQL Server Management Studio (SSMS) để quản trị. Trên môi trường cài mới, quá trình khởi tạo được thực hiện như sau:
+Nhóm sử dụng SQL Server Management Studio (SSMS) để kết nối và quản lý cơ sở dữ liệu Microsoft SQL Server. Trước khi cài đặt, khởi động dịch vụ SQL Server, mở SSMS và kết nối bằng tài khoản có quyền tạo cơ sở dữ liệu.
 
-1. Khởi động dịch vụ SQL Server và mở SSMS.
-2. Kết nối đến SQL Server bằng tài khoản có quyền tạo cơ sở dữ liệu.
-3. Mở tệp `database/BanSachDB_Full.sql` trong mã nguồn dự án; kiểm tra tên database BanSachDB ở đầu tệp.
-4. Thực thi toàn bộ tệp để tạo database, các bảng và ràng buộc.
-5. Kiểm tra các bảng và trạng thái Doctrine Migration từ ứng dụng.
+Đối với môi trường cài mới, người dùng chọn **một trong hai phương án** sau:
 
-Tệp SQL tự tạo cơ sở dữ liệu mới, sáu bảng nghiệp vụ và bảng hạ tầng doctrine_migration_versions để theo dõi các phiên bản cấu trúc. Schema đã tích hợp đủ bốn migration, bao gồm khóa thành viên VARCHAR(10) và số điện thoại VARCHAR(10). Tệp không chứa tài khoản hoặc sách mẫu.
+### Phương án 1: Tự động tạo database và bảng bằng tệp SQL
 
-Không cần tạo database thủ công trước khi chạy tệp. Script sẽ từ chối nếu tên database đã tồn tại. Với database đang sử dụng, thực hiện sao lưu và nâng cấp bằng migration; không chạy lại tệp khởi tạo.
+1. Mở tệp `database/BanSachDB_Full.sql` trong mã nguồn dự án bằng SSMS.
+2. Kiểm tra tên database BanSachDB ở đầu tệp.
+3. Thực thi toàn bộ tệp để tự tạo database, các bảng và ràng buộc.
 
-Sau khi khởi tạo, có thể kiểm tra bằng câu lệnh SQL:
+Tệp đã chứa lệnh tạo cơ sở dữ liệu và chuyển ngữ cảnh sang database đích. Với phương án này, không chạy thêm lệnh CREATE DATABASE riêng trước đó; script sẽ từ chối nếu database đích đã tồn tại.
+
+### Phương án 2: Tạo database bằng câu lệnh SQL, sau đó tạo bảng
+
+Mở cửa sổ New Query trong SSMS và thực thi:
+
+```sql
+USE [master];
+GO
+
+CREATE DATABASE [BanSachDB]
+COLLATE SQL_Latin1_General_CP1_CI_AS;
+GO
+
+USE [BanSachDB];
+GO
+```
+
+Lệnh CREATE DATABASE tạo cơ sở dữ liệu BanSachDB. Lệnh USE chuyển ngữ cảnh làm việc sang database vừa tạo; GO phân tách các batch lệnh trong SSMS.
+
+Sau đó, mở và thực thi toàn bộ tệp `database/BanSachDB_SchemaOnly.sql` để tạo các bảng và ràng buộc trong database đã có. Tệp này không tạo lại database và sẽ từ chối nếu các bảng nghiệp vụ đã tồn tại. Không chạy tiếp `BanSachDB_Full.sql` sau bước tạo database thủ công.
+
+Cả hai phương án đều tạo sáu bảng nghiệp vụ và bảng hạ tầng doctrine_migration_versions. Schema tích hợp đủ bốn migration, bao gồm khóa thành viên VARCHAR(10), số điện thoại VARCHAR(10) và CHECK đúng 10 chữ số. Hai tệp khởi tạo không chứa dữ liệu sách hoặc tài khoản mẫu.
+
+### Kiểm tra kết quả khởi tạo
+
+Sau khi hoàn thành một trong hai phương án, thực thi:
 
 ```sql
 USE [BanSachDB];

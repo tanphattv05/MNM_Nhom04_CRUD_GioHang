@@ -1,3 +1,4 @@
 framework:
+    # Order status is shown in cart history; email delivery is not implemented.
     mailer:
-        dsn: '%env(MAILER_DSN)%'
+        enabled: false
