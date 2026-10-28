@@ -1,6 +1,6 @@
-# Website bán sách – Symfony MVC · CRUD Giỏ hàng
+# CRUD Giỏ hàng – Symfony MVC
 
-Website bán sách phục vụ đồ án: khách hàng tìm sách, quản lý giỏ, đặt hàng COD và theo dõi lịch sử; quản trị viên duyệt, từ chối và xóa giỏ theo trạng thái. Tài liệu mô tả code tại **thư mục gốc của repository**.
+Đồ án của **Nhóm 04 – Lớp DA23TTA** triển khai bốn thao tác **Create, Read, Update, Delete** cho giỏ hàng bằng Symfony MVC và Microsoft SQL Server. Đối tượng quản lý chính là bảng `GIO_HANG`; các dòng sách và số lượng của từng giỏ được lưu trong bảng `MUA`.
 
 **Công nghệ:** PHP ≥ 8.2 · Symfony 7.4 · Twig · AssetMapper · Doctrine DBAL · Microsoft SQL Server.
 
@@ -11,6 +11,7 @@ Website bán sách phục vụ đồ án: khách hàng tìm sách, quản lý gi
 **Mã nguồn:** [MNM_Nhom04_CRUD_GioHang trên GitHub](https://github.com/tanphattv05/MNM_Nhom04_CRUD_GioHang).
 
 - [Cài đặt và chạy demo](#08-cài-đặt-và-chạy-dự-án)
+- [Kịch bản thuyết trình trước hội đồng](docs/PRESENTATION.md)
 - [Báo cáo kỹ thuật Cart](docs/CART_REPORT.md)
 - [Test case và kết quả thực tế](docs/test-cases.md)
 - [Hướng dẫn database](database/README_DATABASE.md)
@@ -18,31 +19,32 @@ Website bán sách phục vụ đồ án: khách hàng tìm sách, quản lý gi
 
 ## 01. Giới thiệu dự án và phạm vi
 
-Module chính là **CRUD giỏ hàng**, có đăng ký/đăng nhập bằng **username**, hồ sơ cá nhân, danh mục sách và khu vực Admin để demo nghiệp vụ đầy đủ. Email chỉ là thông tin liên hệ. Việc xác nhận COD tạo giỏ **Chờ duyệt**, chưa thu tiền và chưa trừ kho.
+Module quản lý quá trình tạo giỏ, xem danh sách và chi tiết, cập nhật nội dung, hủy và xóa giỏ theo trạng thái. Khách hàng thao tác trên giỏ của mình; quản trị viên xem và xử lý các giỏ theo quyền được cấp.
+
+Giỏ đang soạn được lưu trong Symfony Session. Khi người dùng gửi giỏ, ứng dụng tạo bản ghi `GIO_HANG` ở trạng thái **Chờ duyệt** và lưu các dòng tương ứng vào `MUA` trong cùng transaction.
 
 ### Thành viên
 
 **Nhóm 04 – Lớp DA23TTA**
 
 | STT | Họ và tên | MSSV | Vai trò | Nhiệm vụ phân công |
-|------|---|---|---|---|
-| 1 | Huỳnh Dương Tấn Phát | 110123038 | Trưởng nhóm | Đăng ký, đăng nhập, phân quyền và tạo giỏ hàng (Create) |
+|---|---|---|---|---|
+| 1 | Huỳnh Dương Tấn Phát | 110123038 | Trưởng nhóm | Xây dựng chức năng tạo giỏ hàng (Create) |
 | 2 | Trần Hoàng Oanh | 110123037 | Thành viên | Danh sách, tìm kiếm và chi tiết giỏ hàng (Read) |
 | 3 | Cao Á Châu | 110123206 | Thành viên | Chuẩn bị và cấu hình cơ sở dữ liệu SQL Server |
 | 4 | Trần Vũ Ngọc Huỳnh | 110123012 | Thành viên | Hủy và xóa giỏ hàng (Delete) |
 | 5 | Võ Thị Kiều Nhi | 110123033 | Thành viên | Cập nhật, duyệt và từ chối giỏ hàng (Update) |
-| 6 | Nguyễn An Ninh | 110123036 | Thành viên | Hoàn thiện giao diện và kiểm thử hệ thống |
+| 6 | Nguyễn An Ninh | 110123036 | Thành viên | Hoàn thiện giao diện và kiểm thử CRUD giỏ hàng |
 | 7 | Phạm Bá Hạo Long | 110123024 | Thư ký | Biên soạn và hoàn thiện tài liệu hướng dẫn kỹ thuật Hands-on |
 
-### Chức năng chính
+### Các thao tác CRUD giỏ hàng
 
-- Đăng ký, đăng nhập bằng username, cập nhật hồ sơ và đổi mật khẩu.
-- Xem danh mục sách; tìm theo tên/tác giả, lọc thể loại/giá và sắp xếp.
-- CRUD giỏ hàng: xem, thêm sách, sửa số lượng, bỏ sách; kiểm tra tồn kho và tính tổng tiền.
-- Xác nhận đặt hàng COD, xem lịch sử, sửa/hủy giỏ Chờ duyệt.
-- Admin tìm kiếm, duyệt, từ chối và xóa giỏ theo trạng thái.
-
-Phạm vi CRUD của đồ án là **giỏ hàng**. Repo hiện chưa có màn hình quản trị thêm/sửa/xóa sách.
+| Thao tác | Nội dung |
+|---|---|
+| **Create – Tạo** | Thêm các sách đã có vào giỏ nháp, nhập số lượng và ghi chú; gửi giỏ để lưu vào `GIO_HANG` và `MUA` |
+| **Read – Xem** | Xem giỏ nháp, danh sách và chi tiết giỏ đã gửi; lọc trạng thái, phân trang; quản trị viên tìm giỏ theo mã hoặc thông tin chủ giỏ |
+| **Update – Cập nhật** | Thay đổi số lượng, thêm hoặc bỏ dòng sách, sửa ghi chú của giỏ Chờ duyệt; quản trị viên duyệt hoặc từ chối giỏ |
+| **Delete – Xóa** | Bỏ dòng khỏi giỏ nháp; khách hàng hủy giỏ Chờ duyệt; quản trị viên xóa giỏ Đã hủy hoặc Từ chối cùng các dòng `MUA` |
 
 ## 02. Kiến trúc và sơ đồ
 
@@ -51,23 +53,24 @@ Giỏ nháp dùng Symfony Session; giỏ đã gửi dùng `GIO_HANG` và `MUA` t
 | Sơ đồ | Hình ảnh |
 |---|---|
 | [Kiến trúc ứng dụng](docs/diagrams/architecture.md) — giao diện, Controller, Service và tầng dữ liệu | [![Kiến trúc ứng dụng](docs/diagrams/architecture.png)](docs/diagrams/architecture.png) |
-| [Use Case](docs/diagrams/use-case.md) — chức năng của khách hàng và quản trị viên | [![Use Case module giỏ hàng](docs/diagrams/use-case.png)](docs/diagrams/use-case.png) |
-| [Sequence](docs/diagrams/cart-sequence.md) — luồng thêm sách và xác nhận đặt hàng | [![Sequence thêm sách và đặt hàng](docs/diagrams/cart-sequence.png)](docs/diagrams/cart-sequence.png) |
+| [Sequence](docs/diagrams/cart-sequence.md) — luồng tạo và lưu giỏ hàng | [![Sequence xử lý giỏ hàng](docs/diagrams/cart-sequence.png)](docs/diagrams/cart-sequence.png) |
 | [ERD](docs/diagrams/database-erd.md) — mô hình thiết kế do nhóm cung cấp | [![ERD gốc của nhóm](docs/diagrams/database-erd-original.png)](docs/diagrams/database-erd-original.png) |
 
 Phân tích chi tiết: [báo cáo Cart](docs/CART_REPORT.md). Sơ đồ vật lý để đối chiếu với database SQL Server: [PNG](docs/diagrams/database-erd.png), [SVG](docs/diagrams/database-erd.svg), [PDF](docs/diagrams/database-erd.pdf).
+
+Thuyết minh cách triển khai: [Symfony và kiến trúc MVC trong module CRUD giỏ hàng](docs/SYMFONY_MVC.md).
 
 ## 03. Dữ liệu và cấu trúc repository
 
 | Nơi lưu | Vai trò |
 |---|---|
 | Session `draft_cart_<id>` | `{items: [bookId => quantity], nonce}`; không lưu giá từ trình duyệt |
-| `THANH_VIEN`, `QTV` | Khách hàng và quản trị viên; mã thành viên VARCHAR(10), điện thoại VARCHAR(10), mật khẩu đã hash |
-| `LOAI_SACH`, `SACH` | Loại sách, giá `NUMERIC(12,2)`, tồn kho |
 | `GIO_HANG` | Chủ giỏ, thời gian, trạng thái, ghi chú, Admin và lý do từ chối |
 | `MUA` | Chi tiết sách/số lượng, khóa ghép thành viên–sách–giỏ |
 
-**Cấu trúc GIO_HANG sau migration mới:**
+Các khóa ngoại tham chiếu `THANH_VIEN`, `QTV` và `SACH` để xác định chủ giỏ, người xử lý và sách trong từng dòng giỏ hàng.
+
+**Cấu trúc bảng GIO_HANG:**
 
 | Cột | Kiểu dữ liệu | Vai trò |
 |---|---|---|
@@ -76,59 +79,49 @@ Phân tích chi tiết: [báo cáo Cart](docs/CART_REPORT.md). Sơ đồ vật l
 | `QTV_USER_ADMIN` | VARCHAR(60), NULL | Khóa ngoại đến quản trị viên |
 | `GIO_HANG_THOI_GIAN` | DATETIME, NULL | Thời điểm tạo |
 | `GIO_HANG_TRANG_THAI` | NVARCHAR(30), NULL | Trạng thái xử lý |
-| `GIO_HANG_GHI_CHU` | NVARCHAR(255), NULL | Ghi chú/thông tin nhận hàng |
+| `GIO_HANG_GHI_CHU` | NVARCHAR(255), NULL | Ghi chú của giỏ hàng |
 | `GIO_HANG_LY_DO_TU_CHOI` | NVARCHAR(255), NULL | Lý do từ chối riêng |
 
-```text
-├── src/
-│   ├── Command/          # Kiểm tra/chuyển đổi mật khẩu tài khoản demo
-│   ├── Controller/       # Tài khoản, catalog, tạo/đọc/sửa/duyệt/xóa giỏ
-│   ├── Form/             # Form tài khoản và mật khẩu
-│   ├── Repository/       # Truy vấn SQL có tham số qua DBAL
-│   ├── Security/         # Provider, authenticator, logout
-│   ├── Service/          # CartService, CheckoutService
-│   └── Twig/             # Bộ lọc hiển thị tiền vnd
-├── templates/            # Giao diện Twig
-├── assets/               # CSS, JavaScript, Stimulus; không cần npm build
-├── config/               # Symfony, Doctrine, Security, routes
-├── migrations/           # 4 migration SQL Server
-├── database/             # SQL cài mới, dữ liệu mẫu cũ, hướng dẫn
-├── tests/                # PHPUnit và smoke test
-├── scripts/check.ps1     # Chạy kiểm tra, lưu log vào var/checks
-├── docs/                 # Báo cáo, sơ đồ, bằng chứng kiểm thử
-└── public/index.php      # Điểm vào ứng dụng
-```
+Các tệp và thư mục chính của module:
+
+| Vị trí | Trách nhiệm |
+|---|---|
+| `src/Controller/GioHangController.php` | Giỏ nháp, thêm/sửa/bỏ dòng và gửi giỏ |
+| `src/Controller/CartReadController.php` | Danh sách và chi tiết giỏ |
+| `src/Controller/CartEditController.php` | Cập nhật giỏ đã gửi |
+| `src/Controller/CartReviewController.php` | Duyệt hoặc từ chối giỏ |
+| `src/Controller/CartDeleteController.php` | Hủy và xóa giỏ |
+| `src/Service/CartService.php` | Kiểm tra dữ liệu, tính tổng, chuyển trạng thái và transaction |
+| `src/Repository/CartRepository.php` | Truy vấn danh sách, chi tiết và tổng tiền giỏ |
+| `templates/gio_hang/` | Giao diện thao tác giỏ hàng bằng Twig |
+| `migrations/`, `database/` | Migration, tệp tạo CSDL và hướng dẫn kết nối |
+| `tests/`, `scripts/check.ps1` | Kiểm thử và chạy các bước kiểm tra |
 
 Ứng dụng hiện truy vấn bằng **Doctrine DBAL, không dùng Entity ORM cho nghiệp vụ**. Thư mục trùng tên `MNM_Nhom04_CRUD_GioHang/` bên trong workspace là một checkout riêng; ứng dụng và các lệnh trong tài liệu này sử dụng thư mục gốc chứa README.
 
 ## 04. Triển khai Symfony và quy tắc nghiệp vụ
 
-`GioHangController` xử lý giỏ tạm/checkout; các controller `CartRead`, `CartEdit`, `CartReview`, `CartDelete` chia theo trách nhiệm. `CartService` kiểm tra số lượng, tồn kho, nonce và chuyển trạng thái. `CheckoutService` kiểm tra người nhận, điện thoại, phương thức hỗ trợ và giới hạn lưu trữ.
+Controller nhận yêu cầu và trả giao diện Twig; `CartService` xử lý nghiệp vụ và các thao tác ghi; `CartRepository` truy vấn danh sách, chi tiết và tổng tiền. Các truy vấn sử dụng tham số qua Doctrine DBAL.
 
-Khi thêm sách từ danh mục hoặc hộp chi tiết bị lỗi, form đưa khách trở lại trang danh mục đang lọc và hiển thị thông báo; hộp chi tiết được mở lại khi có `cart_detail`. Thêm thành công vẫn chuyển đến giỏ hàng. URL quay lại chỉ được chấp nhận trong đường dẫn danh mục của ứng dụng.
+- **Tạo giỏ:** số lượng phải là số nguyên dương và không vượt tồn kho. Thêm trùng sách sẽ cộng số lượng. Giá và tổng tiền được tính từ dữ liệu phía server.
+- **Gửi giỏ:** kiểm tra token CSRF và nonce, lưu `GIO_HANG` cùng các dòng `MUA` trong một transaction, sau đó xóa giỏ nháp khi commit thành công.
+- **Xem và sửa:** khách hàng chỉ được truy cập giỏ của mình. Giỏ đã gửi chỉ được sửa khi ở trạng thái **Chờ duyệt**.
+- **Duyệt hoặc từ chối:** quản trị viên duyệt mới trừ tồn kho; duyệt lại bị chặn. Từ chối phải nhập lý do và không trừ kho.
+- **Hủy và xóa:** hủy giỏ Chờ duyệt chỉ chuyển trạng thái, giữ lịch sử. Xóa giỏ Đã hủy hoặc Từ chối sẽ xóa các dòng `MUA` trước rồi xóa `GIO_HANG` trong cùng transaction.
+- **Xử lý lỗi:** dữ liệu không hợp lệ được báo lỗi; thao tác ghi thất bại được rollback để tránh lưu giỏ thiếu dòng hoặc cập nhật tồn kho dở dang.
 
-Chỉ giỏ **Chờ duyệt** được sửa/hủy. Admin duyệt mới trừ kho trong transaction; duyệt lại bị chặn. Từ chối bắt buộc có lý do riêng và không trừ kho. Admin chỉ xóa vĩnh viễn giỏ **Đã hủy/Từ chối**, xóa dòng `MUA` cùng transaction. Khóa SQL Server và cập nhật có điều kiện bảo vệ dữ liệu khi trạng thái/tồn kho thay đổi.
-
-Checkout hiện hỗ trợ **COD + giao tiêu chuẩn miễn phí**. Họ tên, điện thoại, địa chỉ và lời nhắn được ghép vào `GIO_HANG_GHI_CHU NVARCHAR(255)`: nếu vượt sức chứa sẽ báo lỗi và giữ dữ liệu nhập, không cắt mất địa chỉ. Có thể gửi nhanh giỏ với ghi chú, không qua form giao nhận.
-
-## 05. Web routes chính
+## 05. Routes CRUD giỏ hàng
 
 | Method | Đường dẫn | Chức năng/quyền |
 |---|---|---|
-| GET | `/`, `/home` | Trang giới thiệu công khai |
-| GET/POST | `/dang-ky`, `/dang-nhap` | Đăng ký, đăng nhập username |
-| POST | `/dang-xuat` | Đăng xuất, CSRF |
-| GET | `/danh-muc` | Khách hàng: tìm/lọc/sắp xếp/phân trang |
 | GET | `/gio-hang` | Xem giỏ tạm |
 | POST | `/gio-hang/thay-doi` | `book_id`, `action=add/update/remove`, `quantity`, `_token` |
-| GET/POST | `/gio-hang/thanh-toan` | Kiểm tra giỏ, thông tin nhận hàng, COD |
 | POST | `/gio-hang/gui` | Gửi nhanh: `nonce`, `note`, `_token` |
 | GET | `/gio-hang/lich-su`, `/gio-hang/lich-su/{id}` | Danh sách/chi tiết giỏ của chính mình |
 | GET/POST | `/gio-hang/lich-su/{id}/sua` | Sửa giỏ Chờ duyệt |
 | POST | `/gio-hang/lich-su/{id}/huy` | Khách hàng hủy giỏ Chờ duyệt |
-| GET | `/admin/dashboard`, `/admin/gio-hang`, `/admin/gio-hang/{id}` | Dashboard, danh sách và chi tiết cho Admin |
+| GET | `/admin/gio-hang`, `/admin/gio-hang/{id}` | Danh sách, tìm kiếm và chi tiết giỏ cho Admin |
 | POST | `/admin/gio-hang/{id}/approve`, `…/reject`, `…/xoa` | Duyệt/từ chối/xóa theo trạng thái |
-| GET/POST | `/tai-khoan`, `/tai-khoan/doi-mat-khau` | Hồ sơ, đổi mật khẩu |
 
 Đây là ứng dụng HTML/Twig, chưa có REST API. Chi tiết payload, redirect và mã lỗi nằm trong [báo cáo kỹ thuật](docs/CART_REPORT.md#06-web-routes-và-kết-quả-trả-về).
 
@@ -142,22 +135,19 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts/check.ps1
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts/check.ps1 -WithDatabase
 ```
 
-Integration test tạo dữ liệu tạm trong transaction rồi rollback. `phase7_smoke` và `cart_checkout_smoke` đối chiếu fingerprint cả sáu bảng nghiệp vụ và bảng migration trước/sau. Không chạy nhóm ghi dữ liệu trên production hoặc khi có người khác đồng thời sửa database.
+Nội dung kiểm thử liên quan đến CRUD giỏ hàng gồm tạo giỏ và dòng `MUA`, tính tổng tiền, cập nhật số lượng, kiểm tra quyền sở hữu, chuyển trạng thái, hủy/xóa và rollback khi ghi dữ liệu thất bại.
 
-Kết quả thực tế ngày **28/10/2026**, môi trường PHP 8.4.26 / Symfony 7.4.21 / SQL Server: xem [bảng test case, kết quả và log](docs/test-cases.md). PHPUnit dùng connection giả lập; nhóm integration kiểm tra SQL Server thật. Không dùng kết quả cũ ngày 27/10 làm kết quả của đợt chạy này.
+PHPUnit sử dụng connection giả lập; nhóm integration kiểm tra SQL Server thật, tạo dữ liệu tạm trong transaction rồi rollback. Chạy nhóm có ghi dữ liệu trên database phát triển và chạy tuần tự. Phạm vi, kết quả từng đợt và log được lưu tại [test-cases.md](docs/test-cases.md).
 
-Kết quả mới nhất sau đồng bộ code: **79 test, 283 assertion** đạt, bao gồm thêm sách lỗi quay lại đúng bộ lọc/chi tiết và chặn URL chuyển hướng không hợp lệ; xem [log đồng bộ](docs/evidence/2026-10-28-pull-sync). Đợt trước sau migration VARCHAR(10)/điện thoại 10 chữ số đạt 72 test, 248 assertion; [log sau nâng cấp schema](docs/evidence/2026-10-28-member-schema) được giữ làm lịch sử.
+## 07. Demo CRUD giỏ hàng
 
-## 07. Demo chức năng
+Chuẩn bị dữ liệu liên kết có sẵn và phiên làm việc có quyền `ROLE_USER` hoặc `ROLE_ADMIN` tương ứng với thao tác.
 
-1. Đăng ký tài khoản tại `/dang-ky`, đăng nhập bằng username.
-2. Vào `/danh-muc`, tìm sách và thêm một cuốn hai lần để quan sát cộng số lượng.
-3. Vào `/gio-hang`, sửa số lượng, bỏ sách; tải lại trang để kiểm tra giỏ còn được giữ.
-4. Vào checkout, thử điện thoại không hợp lệ, sau đó điền người nhận hợp lệ và xác nhận COD.
-5. Mở lịch sử, xem giỏ Chờ duyệt; thử sửa hoặc hủy.
-6. Đăng nhập Admin riêng, duyệt và đối chiếu kho; thử duyệt lại hoặc từ chối một giỏ khác.
-
-Ảnh và cách tạo lại nằm trong [hướng dẫn demo](docs/DEMO.md). Tài khoản/giỏ minh họa được tạo trong test và rollback; không thể đăng nhập tài khoản tạm sau khi test kết thúc.
+1. **Create:** thêm sách có sẵn vào giỏ nháp, nhập số lượng và ghi chú rồi gửi giỏ. Kiểm tra bản ghi mới trong `GIO_HANG` và các dòng `MUA`.
+2. **Read:** mở `/gio-hang/lich-su`, lọc trạng thái và xem chi tiết giỏ vừa tạo.
+3. **Update:** sửa số lượng hoặc ghi chú của giỏ Chờ duyệt; kiểm tra lại các dòng và tổng tiền sau khi lưu.
+4. **Delete:** hủy giỏ Chờ duyệt, sau đó dùng quyền Admin xóa giỏ Đã hủy; kiểm tra header và các dòng liên quan đã được xóa.
+5. **Kiểm tra trạng thái:** với một giỏ Chờ duyệt khác, thử duyệt hoặc từ chối và kiểm tra các thao tác sửa/xóa bị giới hạn theo trạng thái.
 
 ## 08. Cài đặt và chạy dự án
 
@@ -187,7 +177,7 @@ composer check-platform-reqs
 
 Nếu chưa có `.env.local`, tạo tệp này từ [.env.local.example](.env.local.example). Nếu tệp đã tồn tại, chỉnh các giá trị cần thiết trong tệp hiện có. Sinh secret bằng `php -r "echo bin2hex(random_bytes(32));"` rồi điền vào:
 
-File `.env` chung chỉ giữ `APP_ENV`, `APP_SECRET` và `DATABASE_URL`. `APP_DEBUG` trong ví dụ dưới là tùy chọn. Email và Messenger hiện được tắt vì nghiệp vụ chưa sử dụng; URL mặc định cho CLI nằm trong `config/packages/routing.yaml`.
+File `.env` chung giữ `APP_ENV`, `APP_SECRET` và `DATABASE_URL`. `APP_DEBUG` trong ví dụ dưới là tùy chọn.
 
 ```dotenv
 APP_ENV=dev
@@ -196,7 +186,7 @@ APP_SECRET=thay_bang_secret_ngau_nhien_cua_may_ban
 DATABASE_URL="mssql://localhost/BanSachDB"
 ```
 
-`localhost` dùng instance mặc định và Windows Authentication của tài khoản chạy PHP. Named instance ví dụ `mssql://TEN_MAY%5CSQLEXPRESS/BanSachDB`; SQL Authentication dùng `mssql://username:password@HOST:1433/BanSachDB` và URL-encode ký tự đặc biệt. Cấu hình hiện tin cậy chứng chỉ local; production cần chứng chỉ tin cậy và tắt debug.
+`localhost` dùng instance mặc định và Windows Authentication của tài khoản chạy PHP. Named instance ví dụ `mssql://TEN_MAY%5CSQLEXPRESS/BanSachDB`; SQL Authentication dùng `mssql://username:password@HOST:1433/BanSachDB` và URL-encode ký tự đặc biệt.
 
 ### Bước 3. Tạo database bằng SSMS
 
@@ -229,7 +219,7 @@ php bin/console doctrine:migrations:migrate --dry-run
 php bin/console doctrine:migrations:migrate
 ```
 
-### Bước 5. Khởi động website
+### Bước 5. Chạy module giỏ hàng
 
 ```powershell
 php bin/console importmap:install
@@ -237,17 +227,9 @@ php bin/console cache:clear
 php -S 127.0.0.1:8000 -t public public/index.php
 ```
 
-Mở **http://127.0.0.1:8000/**. Giữ terminal chạy server; `Ctrl+C` để dừng. Không cần Node.js/npm. CSS/JS được phục vụ qua `/assets/…`.
+Mở **http://127.0.0.1:8000/gio-hang** với phiên làm việc có quyền khách hàng hoặc **http://127.0.0.1:8000/admin/gio-hang** với quyền quản trị viên. Giữ terminal chạy server; `Ctrl+C` để dừng. Không cần Node.js/npm.
 
-### Bước 6. Tạo tài khoản và chuẩn bị dữ liệu
-
-- **Khách hàng:** mở http://127.0.0.1:8000/dang-ky để đăng ký, sau đó đăng nhập tại `/dang-nhap`.
-- **Quản trị viên:** làm theo [hướng dẫn tạo Admin cho database mới](database/README_DATABASE.md#tạo-tài-khoản-admin-cho-database-mới), rồi đăng nhập tại `/admin/dang-nhap` bằng mật khẩu đã tự đặt.
-- **Sách:** nhập dữ liệu loại sách vào `LOAI_SACH` trước, sau đó nhập sách vào `SACH`. Catalog hiển thị rỗng khi chưa có dữ liệu; ứng dụng chưa có màn hình quản lý sách.
-
-`THANH_VIEN_TEN_DANG_NHAP` là khóa định danh **VARCHAR(10)**, độc lập với username đăng nhập `THANH_VIEN_USERNAME VARCHAR(30)`. Mã mới dạng `tv` + 8 ký tự hex; đổi username không làm đổi chủ giỏ. Điện thoại bắt buộc nhập đúng 10 chữ số ở đăng ký/hồ sơ/checkout, lưu chuỗi để giữ số 0 đầu; database cho phép NULL với dữ liệu cũ, nhưng không tự cắt số dài.
-
-Tài khoản đăng ký trên web được tự hash mật khẩu. Với tài khoản có sẵn từ database cũ, xem [cách kiểm tra hoặc đổi mật khẩu](database/README_DATABASE.md#tài-khoản-có-sẵn-trong-database-cũ).
+Trước khi thực hiện CRUD, cơ sở dữ liệu cần có dữ liệu thành viên, quản trị viên và sách để các khóa ngoại của giỏ tham chiếu. Với database cài mới, chuẩn bị các dữ liệu liên kết này trước khi thực hiện kịch bản ở mục 07.
 
 Khắc phục lỗi thường gặp:
 
@@ -259,12 +241,11 @@ Khắc phục lỗi thường gặp:
 
 ## 09. Kết quả, hạn chế và hướng phát triển
 
-Website đã triển khai nghiệp vụ quản lý giỏ hàng, xác nhận đặt hàng COD và quy trình duyệt của quản trị viên. Ứng dụng kiểm tra dữ liệu phía server, phân quyền theo chủ giỏ, sử dụng CSRF và transaction cho các thao tác ghi dữ liệu. Đánh giá chi tiết và định hướng mở rộng được trình bày tại [mục 10 của báo cáo Cart](docs/CART_REPORT.md#10-đánh-giá-và-hướng-phát-triển).
+Module triển khai các thao tác tạo, xem, cập nhật và xóa giỏ hàng, có kiểm tra dữ liệu, quyền sở hữu và trạng thái xử lý. Việc lưu header và chi tiết giỏ trong cùng transaction giúp duy trì tính nhất quán khi thao tác thành công hoặc thất bại.
 
-Hạn chế hiện tại và thứ tự phát triển đề xuất:
+Hạn chế và hướng phát triển trong phạm vi giỏ hàng:
 
-1. Tách địa chỉ giao hàng/phương thức/chi phí thành dữ liệu riêng, lưu đơn giá tại thời điểm đặt. Hiện lịch sử tính theo **giá sách hiện tại** và ghi rõ trên giao diện.
-2. Lưu giỏ nháp lâu dài theo tài khoản nếu cần đồng bộ thiết bị; session hiện mất khi hết hạn/đăng xuất.
-3. Tích hợp thanh toán online, callback có xác thực và trạng thái thanh toán trước khi mở VNPAY/VietQR; hiện chỉ COD.
-4. Kiểm thử nhiều kết nối đồng thời, tải lớn; thay cấp ID `MAX+1` có khóa bảng nếu cần mở rộng.
-5. Bổ sung quản lý sách/loại sách, phí vận chuyển, email và theo dõi giao hàng. Hiện chưa có các module này.
+1. Lưu đơn giá tại thời điểm tạo giỏ trên từng dòng `MUA`; hiện tổng tiền được tính theo giá sách hiện tại.
+2. Lưu giỏ nháp trong database để có thể khôi phục khi phiên làm việc hết hạn.
+3. Bổ sung lịch sử thay đổi số lượng, ghi chú và trạng thái để dễ đối chiếu các lần cập nhật giỏ.
+4. Kiểm thử tải và truy cập đồng thời; cải tiến cơ chế cấp mã `MAX+1`, khóa dữ liệu và truy vấn danh sách giỏ.
