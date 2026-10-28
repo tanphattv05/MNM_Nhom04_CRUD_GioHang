@@ -6,6 +6,10 @@ Website bán sách phục vụ đồ án: khách hàng tìm sách, quản lý gi
 
 **Nhóm:** 04 · **Lớp:** DA23TTA · **Trưởng nhóm:** Huỳnh Dương Tấn Phát.
 
+**Học phần:** Phát triển ứng dụng web với mã nguồn mở · **Đơn vị:** Trường Kỹ thuật và Công nghệ – Đại học Trà Vinh.
+
+**Mã nguồn:** [MNM_Nhom04_CRUD_GioHang trên GitHub](https://github.com/tanphattv05/MNM_Nhom04_CRUD_GioHang).
+
 - [Cài đặt và chạy demo](#09-cài-đặt-và-chạy-dự-án)
 - [Báo cáo kỹ thuật Cart](docs/CART_REPORT.md)
 - [Test case và kết quả thực tế](docs/test-cases.md)
@@ -20,17 +24,15 @@ Module chính là **CRUD giỏ hàng**, có đăng ký/đăng nhập bằng **us
 
 **Nhóm 04 – Lớp DA23TTA**
 
-| STT | Họ và tên | MSSV | Vai trò |
-|---|---|---|---|
-| 1 | Huỳnh Dương Tấn Phát | 110123038 | Trưởng nhóm |
-| 2 | Trần Hoàng Oanh | 110123037 | Thành viên |
-| 3 | Cao Á Châu | 110123206 | Thành viên |
-| 4 | Trần Vũ Ngọc Huỳnh | 110123012 | Thành viên |
-| 5 | Võ Thị Kiều Nhi | 110123033 | Thành viên |
-| 6 | Nguyễn An Ninh | 110123036 | Thành viên |
-| 7 | Phạm Bá Hạo Long | 110123024 | Thư ký |
-
-Vai trò theo danh sách nhóm đã cung cấp; nhiệm vụ kỹ thuật từng thành viên được bổ sung khi có phân công cụ thể.
+| STT | Họ và tên | MSSV | Vai trò | Nhiệm vụ phân công |
+|---|---|---|---|---|
+| 1 | Huỳnh Dương Tấn Phát | 110123038 | Trưởng nhóm | Đăng ký, đăng nhập, phân quyền và tạo giỏ hàng (Create) |
+| 2 | Trần Hoàng Oanh | 110123037 | Thành viên | Danh sách, tìm kiếm và chi tiết giỏ hàng (Read) |
+| 3 | Cao Á Châu | 110123206 | Thành viên | Chuẩn bị và cấu hình cơ sở dữ liệu SQL Server |
+| 4 | Trần Vũ Ngọc Huỳnh | 110123012 | Thành viên | Hủy và xóa giỏ hàng (Delete) |
+| 5 | Võ Thị Kiều Nhi | 110123033 | Thành viên | Cập nhật, duyệt và từ chối giỏ hàng (Update) |
+| 6 | Nguyễn An Ninh | 110123036 | Thành viên | Hoàn thiện giao diện và kiểm thử hệ thống |
+| 7 | Phạm Bá Hạo Long | 110123024 | Thư ký | Biên soạn và hoàn thiện tài liệu hướng dẫn kỹ thuật Hands-on |
 
 ### Chức năng chính
 
@@ -112,11 +114,13 @@ ERD đã đối chiếu với SQL Server thực tế: [ảnh PNG](docs/diagrams/
 └── public/index.php      # Điểm vào ứng dụng
 ```
 
-Ứng dụng hiện truy vấn bằng **Doctrine DBAL, không dùng Entity ORM cho nghiệp vụ**. Thư mục trùng tên `MNM_Nhom04_CRUD_GioHang/` bên trong workspace là một checkout riêng, chưa được Git của repo ngoài quản lý; chạy lệnh tại thư mục chứa README này.
+Ứng dụng hiện truy vấn bằng **Doctrine DBAL, không dùng Entity ORM cho nghiệp vụ**. Thư mục trùng tên `MNM_Nhom04_CRUD_GioHang/` bên trong workspace là một checkout riêng; ứng dụng và các lệnh trong tài liệu này sử dụng thư mục gốc chứa README.
 
 ## 05. Triển khai Symfony và quy tắc nghiệp vụ
 
 `GioHangController` xử lý giỏ tạm/checkout; các controller `CartRead`, `CartEdit`, `CartReview`, `CartDelete` chia theo trách nhiệm. `CartService` kiểm tra số lượng, tồn kho, nonce và chuyển trạng thái. `CheckoutService` kiểm tra người nhận, điện thoại, phương thức hỗ trợ và giới hạn lưu trữ.
+
+Khi thêm sách từ danh mục hoặc hộp chi tiết bị lỗi, form đưa khách trở lại trang danh mục đang lọc và hiển thị thông báo; hộp chi tiết được mở lại khi có `cart_detail`. Thêm thành công vẫn chuyển đến giỏ hàng. URL quay lại chỉ được chấp nhận trong đường dẫn danh mục của ứng dụng.
 
 Chỉ giỏ **Chờ duyệt** được sửa/hủy. Admin duyệt mới trừ kho trong transaction; duyệt lại bị chặn. Từ chối bắt buộc có lý do riêng và không trừ kho. Admin chỉ xóa vĩnh viễn giỏ **Đã hủy/Từ chối**, xóa dòng `MUA` cùng transaction. Khóa SQL Server và cập nhật có điều kiện bảo vệ dữ liệu khi trạng thái/tồn kho thay đổi.
 
@@ -157,7 +161,7 @@ Integration test tạo dữ liệu tạm trong transaction rồi rollback. `phas
 
 Kết quả thực tế ngày **28/10/2026**, môi trường PHP 8.4.26 / Symfony 7.4.21 / SQL Server: xem [bảng test case, kết quả và log](docs/test-cases.md). PHPUnit dùng connection giả lập; nhóm integration kiểm tra SQL Server thật. Không dùng kết quả cũ ngày 27/10 làm kết quả của đợt chạy này.
 
-Sau migration VARCHAR(10)/điện thoại 10 chữ số: **72 test, 248 assertion** đạt; test SQL bổ sung xác minh mã thành viên có chữ, provider, PK/FK, ràng buộc điện thoại và CRUD giỏ. Xem [log sau nâng cấp](docs/evidence/2026-10-28-member-schema).
+Kết quả mới nhất sau đồng bộ code: **79 test, 283 assertion** đạt, bao gồm thêm sách lỗi quay lại đúng bộ lọc/chi tiết và chặn URL chuyển hướng không hợp lệ; xem [log đồng bộ](docs/evidence/2026-10-28-pull-sync). Đợt trước sau migration VARCHAR(10)/điện thoại 10 chữ số đạt 72 test, 248 assertion; [log sau nâng cấp schema](docs/evidence/2026-10-28-member-schema) được giữ làm lịch sử.
 
 ## 08. Demo chức năng
 

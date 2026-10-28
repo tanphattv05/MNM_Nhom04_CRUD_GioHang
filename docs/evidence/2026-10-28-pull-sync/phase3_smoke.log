@@ -1,0 +1,33 @@
+PASS: Khách chưa đăng nhập không được gửi
+PASS: Admin không được tạo giỏ khách
+PASS: Danh mục hiển thị 12 sách thật
+PASS: Phân trang và tổng sách
+PASS: Tìm theo tên sách
+PASS: Tìm theo tác giả
+PASS: Lọc loại sách và khoảng giá
+PASS: Sắp xếp price_asc
+PASS: Sắp xếp price_desc
+PASS: Sắp xếp name
+PASS: Tìm kiếm có ký tự SQL được tham số hóa
+PASS: CSRF thêm sách sai bị chặn
+PASS: Nhiều sách và thêm trùng cộng số lượng
+PASS: Cập nhật số lượng
+PASS: Không nhận số lượng nhỏ hơn 1
+PASS: Không vượt tồn kho
+PASS: Bỏ sách khỏi giỏ tạm
+PASS: Gửi giỏ thành công dùng PRG
+PASS: Chủ sở hữu và trạng thái lấy từ server
+PASS: Lưu đúng các dòng MUA
+PASS: Chờ duyệt không trừ tồn kho
+PASS: Không gửi giỏ trống hoặc gửi trùng khi refresh/replay
+PASS: Mô phỏng lỗi sau khi đã ghi header và một dòng
+PASS: Transaction rollback toàn bộ dữ liệu ghi dở
+PASS: Lỗi gửi giữ giỏ tạm để thử lại
+PASS: Kiểm tra tồn kho lại lúc gửi
+PASS: Giữ nguyên dữ liệu cũ SACH
+PASS: Giữ nguyên dữ liệu cũ LOAI_SACH
+PASS: Giữ nguyên dữ liệu cũ THANH_VIEN
+PASS: Giữ nguyên dữ liệu cũ QTV
+PASS: Giữ nguyên dữ liệu cũ GIO_HANG
+PASS: Giữ nguyên dữ liệu cũ MUA
+32 checks passed; all writes rolled back.

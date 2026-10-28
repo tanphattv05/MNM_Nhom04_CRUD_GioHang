@@ -1,0 +1,22 @@
++----------------------------------------------------------------------------------------------------------------------+
+| Configuration                                                                                                        |
++----------------------+----------------------+------------------------------------------------------------------------+
+| Storage              | Type                 | Doctrine\Migrations\Metadata\Storage\TableMetadataStorageConfiguration |
+|                      | Table Name           | doctrine_migration_versions                                            |
+|                      | Column Name          | version                                                                |
+|----------------------------------------------------------------------------------------------------------------------|
+| Database             | Driver               | Symfony\Bridge\Doctrine\Middleware\IdleConnection\Driver               |
+|                      | Name                 | BanSachDB                                                              |
+|----------------------------------------------------------------------------------------------------------------------|
+| Versions             | Previous             | DoctrineMigrations\Version20261026000300                               |
+|                      | Current              | DoctrineMigrations\Version20261028000100                               |
+|                      | Next                 | Already at latest version                                              |
+|                      | Latest               | DoctrineMigrations\Version20261028000100                               |
+|----------------------------------------------------------------------------------------------------------------------|
+| Migrations           | Executed             | 4                                                                      |
+|                      | Executed Unavailable | 0                                                                      |
+|                      | Available            | 4                                                                      |
+|                      | New                  | 0                                                                      |
+|----------------------------------------------------------------------------------------------------------------------|
+| Migration Namespaces | DoctrineMigrations   | F:\1. Đang lam\bansachSym\MNM_Nhom04_CRUD_GioHang/migrations           |
++----------------------+----------------------+------------------------------------------------------------------------+

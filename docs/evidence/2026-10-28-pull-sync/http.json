@@ -1,0 +1,42 @@
+[
+  {
+    "route": "/",
+    "status": 200,
+    "location": null
+  },
+  {
+    "route": "/assets/styles/account-6xAKNle.css",
+    "status": 200,
+    "type": "text/css;charset=UTF-8"
+  },
+  {
+    "route": "/assets/styles/team-HExo0O0.css",
+    "status": 200,
+    "type": "text/css;charset=UTF-8"
+  },
+  {
+    "route": "/assets/styles/app-bZ7Atnv.css",
+    "status": 200,
+    "type": "text/css;charset=UTF-8"
+  },
+  {
+    "route": "/dang-nhap",
+    "status": 200,
+    "location": null
+  },
+  {
+    "route": "/dang-ky",
+    "status": 200,
+    "location": null
+  },
+  {
+    "route": "/gio-hang",
+    "status": 302,
+    "location": "/dang-nhap"
+  },
+  {
+    "route": "/admin/gio-hang",
+    "status": 302,
+    "location": "/dang-nhap"
+  }
+]

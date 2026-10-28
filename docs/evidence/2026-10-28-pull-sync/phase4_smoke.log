@@ -1,0 +1,68 @@
+PASS: Website root renders home
+PASS: Existing home URL retained
+PASS: Anonymous history blocked
+PASS: Anonymous admin blocked
+PASS: Customer admin blocked
+PASS: Customer admin detail blocked
+PASS: Customer history rendered
+PASS: Owner scoped count
+PASS: Owner scoped row
+PASS: Own detail rendered
+PASS: History navigation active on detail
+PASS: Owner scoped row
+PASS: Own detail rendered
+PASS: History navigation active on detail
+PASS: Owner scoped row
+PASS: Own detail rendered
+PASS: History navigation active on detail
+PASS: Owner scoped row
+PASS: Own detail rendered
+PASS: History navigation active on detail
+PASS: Owner scoped row
+PASS: Own detail rendered
+PASS: History navigation active on detail
+PASS: Foreign cart fixture exists
+PASS: Foreign cart hidden
+PASS: Missing cart hidden
+PASS: Admin customer route blocked
+PASS: Rendered /admin/gio-hang
+PASS: Rendered /admin/dashboard
+PASS: Rendered /admin/gio-hang?q=%27%20OR%201%3D1--
+PASS: Rendered /admin/gio-hang?status=__null
+PASS: Rendered /admin/gio-hang?page=999999
+PASS: Admin sees all carts
+PASS: Dashboard pending count
+PASS: Parameterized search
+PASS: Page clamped
+PASS: Status filter
+PASS: Status filter
+PASS: Status filter
+PASS: Admin detail rendered
+PASS: Exact decimal total
+PASS: Admin detail rendered
+PASS: Exact decimal total
+PASS: Admin detail rendered
+PASS: Exact decimal total
+PASS: Admin detail rendered
+PASS: Exact decimal total
+PASS: Admin detail rendered
+PASS: Exact decimal total
+PASS: Admin detail rendered
+PASS: Exact decimal total
+PASS: Admin detail rendered
+PASS: Exact decimal total
+PASS: Admin detail rendered
+PASS: Exact decimal total
+PASS: Admin detail rendered
+PASS: Exact decimal total
+PASS: Admin detail rendered
+PASS: Exact decimal total
+PASS: Admin detail rendered
+PASS: Exact decimal total
+PASS: Admin detail rendered
+PASS: Exact decimal total
+PASS: Read endpoint rejects POST
+PASS: Empty cart and NULL metadata render
+PASS: NULL price not shown as zero
+PASS: Notes escaped
+67 checks passed; no database writes.

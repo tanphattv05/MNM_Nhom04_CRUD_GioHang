@@ -1,0 +1,26 @@
+PASS: THANH_VIEN member key is VARCHAR(10)
+PASS: GIO_HANG member key is VARCHAR(10)
+PASS: MUA member key is VARCHAR(10)
+PASS: Phone storage is VARCHAR(10)
+PASS: All six foreign keys remain enabled and trusted
+PASS: MUA composite primary key is preserved
+PASS: New customer receives an alphanumeric string key
+PASS: Repository reloads nonnumeric member identity
+PASS: Security provider preserves string identity
+PASS: Leading zero in phone is preserved
+PASS: Database rejects invalid phone length/characters
+PASS: Database rejects invalid phone length/characters
+PASS: Database rejects invalid phone length/characters
+PASS: Cart header stores full string owner
+PASS: Cart detail stores full string owner
+PASS: Submitted cart update supports string member key
+PASS: Owner cancellation supports string key
+PASS: Unchanged after rollback: THANH_VIEN
+PASS: Unchanged after rollback: QTV
+PASS: Unchanged after rollback: SACH
+PASS: Unchanged after rollback: LOAI_SACH
+PASS: Unchanged after rollback: GIO_HANG
+PASS: Unchanged after rollback: MUA
+PASS: Unchanged after rollback: doctrine_migration_versions
+PASS: Schema restored/preserved after rollback
+25 checks passed; all writes rolled back.

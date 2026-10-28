@@ -8,7 +8,7 @@
 
 Nhà sách Nhóm 04 cho phép khách hàng chọn sách, gửi yêu cầu đặt mua và theo dõi xử lý. Module Cart bao gồm giỏ nháp, xác nhận COD, giỏ đã gửi, sửa/hủy và quy trình duyệt của Admin. Các chức năng tài khoản/catalog cung cấp đầu vào và phân quyền cho luồng này.
 
-Chưa có bảng đơn hàng/thanh toán độc lập. Tên “đơn hàng” ở checkout là giỏ `GIO_HANG` đã gửi, không phải giao dịch thu tiền thành công. Danh sách và vai trò thành viên được ghi tại README; nhiệm vụ kỹ thuật cá nhân sẽ cập nhật theo phân công thực tế của nhóm.
+Chưa có bảng đơn hàng/thanh toán độc lập. Tên “đơn hàng” ở checkout là giỏ `GIO_HANG` đã gửi, không phải giao dịch thu tiền thành công. Danh sách, vai trò và nhiệm vụ kỹ thuật của các thành viên được ghi tại [README](../README.md#thành-viên).
 
 ## 02. Phân tích yêu cầu
 

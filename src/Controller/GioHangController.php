@@ -30,8 +30,17 @@ final class GioHangController extends AbstractController
             $quantity = $action === 'remove' ? 1 : CartService::quantity($request->request->getString('quantity'));
             $cart->modify($this->getUser(),$id,$action,$quantity);
             $this->addFlash('success', $action === 'remove' ? 'Đã bỏ sách khỏi giỏ.' : 'Đã cập nhật giỏ hàng.');
+            return $this->redirectToRoute('app_my_cart', status: Response::HTTP_SEE_OTHER);
         } catch (\DomainException $e) { $this->addFlash('cart_error',$e->getMessage()); }
         catch (\Doctrine\DBAL\Exception) { $this->addFlash('cart_error','Chưa thể cập nhật giỏ hàng. Vui lòng thử lại sau.'); }
+        // Only accept a local catalog URL supplied by the add forms, never an external redirect.
+        $returnTo = $request->request->getString('return_to');
+        $catalog = $this->generateUrl('app_catalog');
+        if ($request->request->getString('action') === 'add'
+            && ($returnTo === $catalog || str_starts_with($returnTo, $catalog.'?') || str_starts_with($returnTo, $catalog.'#'))
+            && !preg_match('/[\x00-\x20\x7f\\\\]/', $returnTo)) {
+            return $this->redirect($returnTo, Response::HTTP_SEE_OTHER);
+        }
         return $this->redirectToRoute('app_my_cart',status:Response::HTTP_SEE_OTHER);
     }
 

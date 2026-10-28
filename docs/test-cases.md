@@ -1,5 +1,15 @@
 # Kiểm thử và kết quả thực tế
 
+## Kết quả mới nhất: đồng bộ sau pull
+
+Ngày 28/10/2026, code mới đã được gộp với schema VARCHAR(10)/điện thoại 10 chữ số. Database không có migration mới: Executed=4, Available=4, New=0; CHECK điện thoại vẫn được bật và trusted.
+
+**PHPUnit: 79 tests, 283 assertions, PASS.** [Log kiểm thử sau đồng bộ](evidence/2026-10-28-pull-sync/phpunit.log); [các log còn lại](evidence/2026-10-28-pull-sync).
+
+Bổ sung 7 case HTTP vào `CartCheckoutWebTest`: lỗi thêm sách giữ bộ lọc và trả về hộp chi tiết có thông báo; thêm thành công chuyển đến giỏ; 5 trường hợp URL quay lại không hợp lệ bị chặn (URL ngoài, protocol-relative, đường dẫn khác, dấu gạch chéo ngược, ký tự xuống dòng). Các case dùng connection giả lập và không ghi SQL Server. Kiểm tra cú pháp JavaScript và HTTP/CSS qua server thật đều đạt.
+
+Các kết quả ở những mục tiếp theo thuộc các đợt kiểm tra trước đó, giữ cùng log tương ứng.
+
 ## Kết quả mới nhất: migration mã thành viên và điện thoại
 
 Ngày 28/10/2026 đã áp dụng `Version20261028000100`: mã thành viên ở THANH_VIEN/GIO_HANG/MUA là VARCHAR(10), điện thoại VARCHAR(10) với CHECK đúng 10 chữ số. Đã tạo backup COPY_ONLY, kiểm tra RESTORE VERIFYONLY, chạy thử migration trong transaction rồi rollback trước lần áp dụng thật. Số thử của tài khoản `gggg` được sửa theo xác nhận; fingerprint chuẩn hóa xác nhận các dữ liệu khác giữ nguyên.

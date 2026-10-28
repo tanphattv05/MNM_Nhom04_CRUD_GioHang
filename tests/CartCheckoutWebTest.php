@@ -3,6 +3,7 @@ namespace App\Tests;
 
 use App\Security\Account;
 use Doctrine\DBAL\Connection;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\DomCrawler\Form;
@@ -116,6 +117,55 @@ final class CartCheckoutWebTest extends WebTestCase
         $post['_token'] = 'invalid';
         $client->request('POST', '/gio-hang/thanh-toan', $post);
         self::assertResponseStatusCodeSame(403);
+        self::assertSame([], $this->writes);
+    }
+
+    public function testInvalidAddReturnsToFilteredBookDetailWithMessage(): void
+    {
+        $client = $this->browser();
+        $page = $client->request('GET', '/danh-muc?q=S%C3%A1ch&sort=price_desc&cart_detail=1');
+        $form = $page->filter('#book-detail-1 form')->form();
+        $post = $form->getPhpValues();
+        self::assertStringContainsString('cart_detail=1', $post['return_to']);
+        $post['quantity'] = '11';
+        $client->request('POST', $form->getUri(), $post);
+        self::assertResponseRedirects($post['return_to'], 303);
+        $client->followRedirect();
+        self::assertInputValueSame('q', 'Sách');
+        self::assertSelectorTextContains('#book-detail-1 [role="alert"]', 'tồn kho');
+        self::assertSame([], $this->writes);
+    }
+
+    public function testSuccessfulCatalogAddStillOpensCart(): void
+    {
+        $client = $this->browser();
+        $page = $client->request('GET', '/danh-muc?cart_detail=1');
+        $client->submit($page->filter('#book-detail-1 form')->form(['quantity'=>'2']));
+        self::assertResponseRedirects('/gio-hang', 303);
+        $client->followRedirect();
+        self::assertSelectorCount(1, '.cart-line');
+        self::assertInputValueSame('quantity', '2');
+    }
+
+    public static function unsafeReturnUrls(): iterable
+    {
+        yield 'external' => ['https://example.invalid/danh-muc'];
+        yield 'protocol relative' => ['//example.invalid/danh-muc'];
+        yield 'different local route' => ['/danh-muc-evil'];
+        yield 'backslash' => ['/danh-muc?x=\\example.invalid'];
+        yield 'newline' => ["/danh-muc?x=\r\nLocation:https://example.invalid"];
+    }
+
+    #[DataProvider('unsafeReturnUrls')]
+    public function testInvalidAddCannotRedirectOutsideCatalog(string $returnTo): void
+    {
+        $client = $this->browser();
+        $page = $client->request('GET', '/danh-muc');
+        $post = $page->filter('form.add-book')->first()->form()->getPhpValues();
+        $post['quantity'] = '11';
+        $post['return_to'] = $returnTo;
+        $client->request('POST', '/gio-hang/thay-doi', $post);
+        self::assertResponseRedirects('/gio-hang', 303);
         self::assertSame([], $this->writes);
     }
 }
