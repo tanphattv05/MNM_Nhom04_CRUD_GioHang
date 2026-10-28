@@ -47,6 +47,6 @@
 {% endif %}
 <main id="main-content" class="main-content">{% for message in app.flashes('success') %}<div class="notice" role="status">{{ message }}</div>{% endfor %}{% for message in app.flashes('error') %}<div class="notice" role="alert">{{ message }}</div>{% endfor %}{% block content %}{% endblock %}</main>
 </div>
-<footer class="site-footer"><div><strong>Nhà sách Nhóm 04<span class="brand-dot">.</span></strong><p>Nuôi dưỡng thói quen đọc, mở rộng những chân trời.</p></div><div class="footer-links"><a href="{{ path(is_admin ? 'app_admin_dashboard' : 'app_home') }}">{{ is_admin ? 'Tổng quan quản trị' : 'Trang chủ' }}</a>{% if not is_admin %}<a href="{{ path('app_catalog') }}">Khám phá sách</a>{% endif %}<span>Đọc sách · Kết nối · Khám phá</span></div></footer>
+<footer class="site-footer"><div><strong>Nhà sách Nhóm 04<span class="brand-dot">.</span></strong><p>Nhóm 04 · Lớp DA23TTA · Website bán sách</p></div><div class="footer-links"><a href="{{ path(is_admin ? 'app_admin_dashboard' : 'app_home') }}">{{ is_admin ? 'Tổng quan quản trị' : 'Trang chủ' }}</a>{% if not is_admin %}<a href="{{ path('app_catalog') }}">Khám phá sách</a>{% endif %}<a href="{{ path('app_home') }}#nhom-thuc-hien">Nhóm thực hiện</a></div></footer>
 </div>
 {% endblock %}

@@ -1,152 +1,258 @@
-# Nhà sách Nhóm 04 – Symfony CRUD Giỏ hàng
+# Website bán sách – Symfony MVC · CRUD Giỏ hàng
 
-Symfony 7.4, PHP 8.2+, Twig/AssetMapper và Microsoft SQL Server. Khách hàng xem sách, tạo/sửa/hủy giỏ Chờ duyệt; Admin tìm kiếm, duyệt/từ chối và xóa giỏ Đã hủy/Từ chối. Đăng nhập chung bằng **tên đăng nhập**, không dùng email.
+Website bán sách phục vụ đồ án: khách hàng tìm sách, quản lý giỏ, đặt hàng COD và theo dõi lịch sử; quản trị viên duyệt, từ chối và xóa giỏ theo trạng thái. Tài liệu mô tả code tại **thư mục gốc của repository**.
 
-## Cài đặt trên máy khác
+**Công nghệ:** PHP ≥ 8.2 · Symfony 7.4 · Twig · AssetMapper · Doctrine DBAL · Microsoft SQL Server.
 
-1. Cài PHP 8.2+ và Composer; bật `pdo_sqlsrv`, `ctype`, `iconv` (nên có `mbstring`, `openssl`). Cài Microsoft ODBC Driver 18 for SQL Server. Kiểm tra đúng PHP mà terminal/server sử dụng:
+**Nhóm:** 04 · **Lớp:** DA23TTA · **Trưởng nhóm:** Huỳnh Dương Tấn Phát.
+
+- [Cài đặt và chạy demo](#09-cài-đặt-và-chạy-dự-án)
+- [Báo cáo kỹ thuật Cart](docs/CART_REPORT.md)
+- [Test case và kết quả thực tế](docs/test-cases.md)
+- [Hướng dẫn database](database/README_DATABASE.md)
+- [Nội dung báo cáo: thiết kế bảng và cấu hình database (1.1–1.3)](docs/DATABASE_REPORT.md)
+
+## 01. Giới thiệu dự án và phạm vi
+
+Module chính là **CRUD giỏ hàng**, có đăng ký/đăng nhập bằng **username**, hồ sơ cá nhân, danh mục sách và khu vực Admin để demo nghiệp vụ đầy đủ. Email chỉ là thông tin liên hệ. Việc xác nhận COD tạo giỏ **Chờ duyệt**, chưa thu tiền và chưa trừ kho.
+
+### Thành viên
+
+**Nhóm 04 – Lớp DA23TTA**
+
+| STT | Họ và tên | MSSV | Vai trò |
+|---|---|---|---|
+| 1 | Huỳnh Dương Tấn Phát | 110123038 | Trưởng nhóm |
+| 2 | Trần Hoàng Oanh | 110123037 | Thành viên |
+| 3 | Cao Á Châu | 110123206 | Thành viên |
+| 4 | Trần Vũ Ngọc Huỳnh | 110123012 | Thành viên |
+| 5 | Võ Thị Kiều Nhi | 110123033 | Thành viên |
+| 6 | Nguyễn An Ninh | 110123036 | Thành viên |
+| 7 | Phạm Bá Hạo Long | 110123024 | Thư ký |
+
+Vai trò theo danh sách nhóm đã cung cấp; nhiệm vụ kỹ thuật từng thành viên được bổ sung khi có phân công cụ thể.
+
+### Chức năng chính
+
+- Đăng ký, đăng nhập bằng username, cập nhật hồ sơ và đổi mật khẩu.
+- Xem danh mục sách; tìm theo tên/tác giả, lọc thể loại/giá và sắp xếp.
+- CRUD giỏ hàng: xem, thêm sách, sửa số lượng, bỏ sách; kiểm tra tồn kho và tính tổng tiền.
+- Xác nhận đặt hàng COD, xem lịch sử, sửa/hủy giỏ Chờ duyệt.
+- Admin tìm kiếm, duyệt, từ chối và xóa giỏ theo trạng thái.
+
+Phạm vi CRUD của đồ án là **giỏ hàng**. Repo hiện chưa có màn hình quản trị thêm/sửa/xóa sách.
+
+## 02. Yêu cầu và checklist chức năng
+
+| Chức năng trong checklist | Trạng thái | Cách triển khai |
+|---|---|---|
+| Hiển thị danh sách sách trong giỏ | Đã có | `/gio-hang`, tên sách, tồn kho và số lượng |
+| Thêm sách vào giỏ | Đã có | POST từ danh mục, kiểm tra sách/giá/tồn kho |
+| Cập nhật số lượng | Đã có | Giỏ tạm và giỏ đã gửi ở trạng thái Chờ duyệt |
+| Xóa một sách khỏi giỏ | Đã có | Nút Bỏ sách; giỏ đã gửi không được lưu rỗng |
+| Thành tiền và tổng tiền | Đã có | Giá từ database, tính bằng số nguyên đơn vị 1/100 đồng |
+| Kiểm tra tồn kho | Đã có | Khi thêm/sửa, vào checkout, gửi và Admin duyệt |
+| Chặn số lượng 0 hoặc âm | Đã có | Validation phía server; xóa bằng thao tác riêng |
+| Xử lý sách trùng | Đã có | Gộp theo mã sách, cộng số lượng và kiểm tra lại kho |
+| Giữ giỏ khi tải lại trang | Đã có | Giỏ tạm lưu session, phân biệt theo thành viên |
+| Kiểm tra trước checkout | Đã có | Chặn giỏ rỗng, sách mất, giá lỗi hoặc thiếu kho |
+
+**10/10 mục Cart đã có triển khai và kiểm thử**; điều này không đồng nghĩa đã có cổng thanh toán trực tuyến. Quy tắc bổ sung: tối đa 100 đầu sách; số lượng nguyên 1–999.999.999 và không vượt kho; mọi thao tác ghi dùng POST + CSRF; không nhận giá, chủ sở hữu hoặc trạng thái do client chỉ định.
+
+## 03. Kiến trúc và sơ đồ
+
+Luồng chính: **Twig/Form → Controller → Service → Repository/Doctrine DBAL → SQL Server**. Giỏ nháp dùng Symfony Session; giỏ đã gửi dùng `GIO_HANG` và `MUA`.
+
+- [Use case](docs/diagrams/use-case.md)
+- [Sequence thêm sách và đặt hàng](docs/diagrams/cart-sequence.md)
+- [ERD sáu bảng nghiệp vụ](docs/diagrams/database-erd.md)
+- [Phân tích luồng và transaction](docs/CART_REPORT.md)
+
+ERD đã đối chiếu với SQL Server thực tế: [ảnh PNG](docs/diagrams/database-erd.png), [SVG](docs/diagrams/database-erd.svg), [PDF dùng trong báo cáo](docs/diagrams/database-erd.pdf). Sơ đồ thể hiện đủ sáu bảng và quan hệ chủ giỏ, bao gồm những phần đã bổ sung so với mô hình thiết kế ban đầu.
+
+## 04. Dữ liệu và cấu trúc repository
+
+| Nơi lưu | Vai trò |
+|---|---|
+| Session `draft_cart_<id>` | `{items: [bookId => quantity], nonce}`; không lưu giá từ trình duyệt |
+| `THANH_VIEN`, `QTV` | Khách hàng và quản trị viên; mã thành viên VARCHAR(10), điện thoại VARCHAR(10), mật khẩu đã hash |
+| `LOAI_SACH`, `SACH` | Loại sách, giá `NUMERIC(12,2)`, tồn kho |
+| `GIO_HANG` | Chủ giỏ, thời gian, trạng thái, ghi chú, Admin và lý do từ chối |
+| `MUA` | Chi tiết sách/số lượng, khóa ghép thành viên–sách–giỏ |
+
+**Cấu trúc GIO_HANG sau migration mới:**
+
+| Cột | Kiểu dữ liệu | Vai trò |
+|---|---|---|
+| `GIO_HANG_ID_GIO` | INT, NOT NULL | Khóa chính |
+| `THANH_VIEN_TEN_DANG_NHAP` | VARCHAR(10), NULL | Khóa ngoại đến thành viên |
+| `QTV_USER_ADMIN` | VARCHAR(60), NULL | Khóa ngoại đến quản trị viên |
+| `GIO_HANG_THOI_GIAN` | DATETIME, NULL | Thời điểm tạo |
+| `GIO_HANG_TRANG_THAI` | NVARCHAR(30), NULL | Trạng thái xử lý |
+| `GIO_HANG_GHI_CHU` | NVARCHAR(255), NULL | Ghi chú/thông tin nhận hàng |
+| `GIO_HANG_LY_DO_TU_CHOI` | NVARCHAR(255), NULL | Lý do từ chối riêng |
+
+```text
+├── src/
+│   ├── Command/          # Kiểm tra/chuyển đổi mật khẩu tài khoản demo
+│   ├── Controller/       # Tài khoản, catalog, tạo/đọc/sửa/duyệt/xóa giỏ
+│   ├── Form/             # Form tài khoản và mật khẩu
+│   ├── Repository/       # Truy vấn SQL có tham số qua DBAL
+│   ├── Security/         # Provider, authenticator, logout
+│   ├── Service/          # CartService, CheckoutService
+│   └── Twig/             # Bộ lọc hiển thị tiền vnd
+├── templates/            # Giao diện Twig
+├── assets/               # CSS, JavaScript, Stimulus; không cần npm build
+├── config/               # Symfony, Doctrine, Security, routes
+├── migrations/           # 4 migration SQL Server
+├── database/             # SQL cài mới, dữ liệu mẫu cũ, hướng dẫn
+├── tests/                # PHPUnit và smoke test
+├── scripts/check.ps1     # Chạy kiểm tra, lưu log vào var/checks
+├── docs/                 # Báo cáo, sơ đồ, bằng chứng kiểm thử
+└── public/index.php      # Điểm vào ứng dụng
+```
+
+Ứng dụng hiện truy vấn bằng **Doctrine DBAL, không dùng Entity ORM cho nghiệp vụ**. Thư mục trùng tên `MNM_Nhom04_CRUD_GioHang/` bên trong workspace là một checkout riêng, chưa được Git của repo ngoài quản lý; chạy lệnh tại thư mục chứa README này.
+
+## 05. Triển khai Symfony và quy tắc nghiệp vụ
+
+`GioHangController` xử lý giỏ tạm/checkout; các controller `CartRead`, `CartEdit`, `CartReview`, `CartDelete` chia theo trách nhiệm. `CartService` kiểm tra số lượng, tồn kho, nonce và chuyển trạng thái. `CheckoutService` kiểm tra người nhận, điện thoại, phương thức hỗ trợ và giới hạn lưu trữ.
+
+Chỉ giỏ **Chờ duyệt** được sửa/hủy. Admin duyệt mới trừ kho trong transaction; duyệt lại bị chặn. Từ chối bắt buộc có lý do riêng và không trừ kho. Admin chỉ xóa vĩnh viễn giỏ **Đã hủy/Từ chối**, xóa dòng `MUA` cùng transaction. Khóa SQL Server và cập nhật có điều kiện bảo vệ dữ liệu khi trạng thái/tồn kho thay đổi.
+
+Checkout hiện hỗ trợ **COD + giao tiêu chuẩn miễn phí**. Họ tên, điện thoại, địa chỉ và lời nhắn được ghép vào `GIO_HANG_GHI_CHU NVARCHAR(255)`: nếu vượt sức chứa sẽ báo lỗi và giữ dữ liệu nhập, không cắt mất địa chỉ. Có thể gửi nhanh giỏ với ghi chú, không qua form giao nhận.
+
+## 06. Web routes chính
+
+| Method | Đường dẫn | Chức năng/quyền |
+|---|---|---|
+| GET | `/`, `/home` | Trang giới thiệu công khai |
+| GET/POST | `/dang-ky`, `/dang-nhap` | Đăng ký, đăng nhập username |
+| POST | `/dang-xuat` | Đăng xuất, CSRF |
+| GET | `/danh-muc` | Khách hàng: tìm/lọc/sắp xếp/phân trang |
+| GET | `/gio-hang` | Xem giỏ tạm |
+| POST | `/gio-hang/thay-doi` | `book_id`, `action=add/update/remove`, `quantity`, `_token` |
+| GET/POST | `/gio-hang/thanh-toan` | Kiểm tra giỏ, thông tin nhận hàng, COD |
+| POST | `/gio-hang/gui` | Gửi nhanh: `nonce`, `note`, `_token` |
+| GET | `/gio-hang/lich-su`, `/gio-hang/lich-su/{id}` | Danh sách/chi tiết giỏ của chính mình |
+| GET/POST | `/gio-hang/lich-su/{id}/sua` | Sửa giỏ Chờ duyệt |
+| POST | `/gio-hang/lich-su/{id}/huy` | Khách hàng hủy giỏ Chờ duyệt |
+| GET | `/admin/dashboard`, `/admin/gio-hang`, `/admin/gio-hang/{id}` | Dashboard, danh sách và chi tiết cho Admin |
+| POST | `/admin/gio-hang/{id}/approve`, `…/reject`, `…/xoa` | Duyệt/từ chối/xóa theo trạng thái |
+| GET/POST | `/tai-khoan`, `/tai-khoan/doi-mat-khau` | Hồ sơ, đổi mật khẩu |
+
+Đây là ứng dụng HTML/Twig, chưa có REST API. Chi tiết payload, redirect và mã lỗi nằm trong [báo cáo kỹ thuật](docs/CART_REPORT.md#06-web-routes-và-kết-quả-trả-về).
+
+## 07. Kiểm thử và bằng chứng
+
+```powershell
+# PHPUnit, lint và kiểm tra dịch vụ không kết nối database
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts/check.ps1
+
+# Thêm integration test SQL Server; dùng database phát triển, chạy tuần tự
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts/check.ps1 -WithDatabase
+```
+
+Integration test tạo dữ liệu tạm trong transaction rồi rollback. `phase7_smoke` và `cart_checkout_smoke` đối chiếu fingerprint cả sáu bảng nghiệp vụ và bảng migration trước/sau. Không chạy nhóm ghi dữ liệu trên production hoặc khi có người khác đồng thời sửa database.
+
+Kết quả thực tế ngày **28/10/2026**, môi trường PHP 8.4.26 / Symfony 7.4.21 / SQL Server: xem [bảng test case, kết quả và log](docs/test-cases.md). PHPUnit dùng connection giả lập; nhóm integration kiểm tra SQL Server thật. Không dùng kết quả cũ ngày 27/10 làm kết quả của đợt chạy này.
+
+Sau migration VARCHAR(10)/điện thoại 10 chữ số: **72 test, 248 assertion** đạt; test SQL bổ sung xác minh mã thành viên có chữ, provider, PK/FK, ràng buộc điện thoại và CRUD giỏ. Xem [log sau nâng cấp](docs/evidence/2026-10-28-member-schema).
+
+## 08. Demo chức năng
+
+1. Đăng ký tài khoản tại `/dang-ky`, đăng nhập bằng username.
+2. Vào `/danh-muc`, tìm sách và thêm một cuốn hai lần để quan sát cộng số lượng.
+3. Vào `/gio-hang`, sửa số lượng, bỏ sách; tải lại trang để kiểm tra giỏ còn được giữ.
+4. Vào checkout, thử điện thoại không hợp lệ, sau đó điền người nhận hợp lệ và xác nhận COD.
+5. Mở lịch sử, xem giỏ Chờ duyệt; thử sửa hoặc hủy.
+6. Đăng nhập Admin riêng, duyệt và đối chiếu kho; thử duyệt lại hoặc từ chối một giỏ khác.
+
+Ảnh và cách tạo lại nằm trong [hướng dẫn demo](docs/DEMO.md). Tài khoản/giỏ minh họa được tạo trong test và rollback; không thể đăng nhập tài khoản tạm sau khi test kết thúc.
+
+## 09. Cài đặt và chạy dự án
+
+| Thành phần | Yêu cầu | Phiên bản đã chạy trên máy hiện tại |
+|---|---|---|
+| PHP | ≥ 8.2 | 8.4.26 x64 TS |
+| Composer | 2.x | 2.10.3 |
+| Symfony | 7.4.x theo `composer.lock` | 7.4.21 |
+| Cơ sở dữ liệu | Microsoft SQL Server 2017+ | 17.0.1000.7, Standard Developer Edition |
+| Driver | Microsoft ODBC Driver 18 và `pdo_sqlsrv` phù hợp PHP | `pdo_sqlsrv` 5.13.3 |
+
+Bật `pdo_sqlsrv`, `ctype`, `iconv`; các extension còn lại được kiểm tra bằng Composer. DLL SQL Server phải khớp PHP, TS/NTS và x64/x86.
+
+Quy trình cài đặt theo Symfony: chạy `composer install`, tạo `.env.local` từ cấu hình mẫu, cấu hình `DATABASE_URL` và `APP_SECRET`, chuẩn bị database, kiểm tra/chạy Doctrine migration còn thiếu rồi khởi động PHP server.
 
 ```powershell
 php -v
 php --ini
 php --ri pdo_sqlsrv
-composer check-platform-reqs
 ```
 
-DLL PHP SQL Server phải khớp phiên bản PHP, TS/NTS và kiến trúc x64/x86. Không sao chép đường dẫn DLL của máy cũ.
-
-2. Mở PowerShell tại thư mục dự án đã sao chép. Tạo `.env.local` (không commit) trước khi chạy Composer:
+Tạo `.env.local` riêng, không commit và không ghi đè file đã cấu hình. Tham khảo [.env.local.example](.env.local.example). Sinh secret bằng `php -r "echo bin2hex(random_bytes(32));"` rồi điền vào:
 
 ```dotenv
 APP_ENV=dev
 APP_DEBUG=1
-APP_SECRET=thay_bang_chuoi_ngau_nhien_rieng_cua_may_ban
+APP_SECRET=thay_bang_secret_ngau_nhien_cua_may_ban
 DATABASE_URL="mssql://localhost/BanSachDB"
 ```
 
-Sinh secret bằng `php -r "echo bin2hex(random_bytes(32));"` rồi dán kết quả vào APP_SECRET. Windows Authentication dùng tài khoản Windows đang chạy PHP; tài khoản đó phải có quyền truy cập database.
-
-- Instance mặc định trên máy khác: `mssql://TEN_MAY/BanSachDB`.
-- Named instance: ví dụ `mssql://TEN_MAY%5CSQLEXPRESS/BanSachDB` (encode dấu `\` thành `%5C`), hoặc dùng host/cổng TCP SQL Server đã cấu hình.
-- SQL Authentication: `mssql://username:password@HOST:1433/BanSachDB`; URL-encode username/password có ký tự đặc biệt.
-
-Kết nối hiện tại được kiểm tra là `ACER\SQLEXPRESS`, database `BanSachDB`; không bắt buộc máy khác có cùng tên server. Cấu hình `config/packages/doctrine.yaml` đang dùng ODBC Driver 18, Encrypt=1 và TrustServerCertificate=1 cho máy phát triển. Khi triển khai thật, dùng chứng chỉ tin cậy, HTTPS, APP_ENV=prod, APP_DEBUG=0 và secret riêng.
+`localhost` dùng instance mặc định và Windows Authentication của tài khoản chạy PHP. Named instance ví dụ `mssql://TEN_MAY%5CSQLEXPRESS/BanSachDB`; SQL Authentication dùng `mssql://username:password@HOST:1433/BanSachDB` và URL-encode ký tự đặc biệt. Cấu hình hiện tin cậy chứng chỉ local; production cần chứng chỉ tin cậy và tắt debug.
 
 ```powershell
 composer install
+composer check-platform-reqs
 php bin/console importmap:install
 php bin/console doctrine:query:sql "SELECT DB_NAME() AS database_name, @@SERVERNAME AS server_name"
+php bin/console doctrine:migrations:status
 ```
 
-## Database và hai migration
+**Database mới:** dùng `database/BanSachDB_Full.sql`, tạo schema hiện tại và baseline đủ bốn migration; từ chối tên database đã tồn tại. Không cần tạo database trước khi chạy file. Catalog rỗng cho đến khi nhập sách; tài khoản Admin do người vận hành tạo bằng mật khẩu hash. File `BansachDB_Full_CoDuLieu.sql` là dữ liệu/schema lịch sử, chưa có thay đổi mới và có lệnh xóa/tạo lại bảng; không dùng để nâng cấp database đang có dữ liệu.
 
-**Máy đã có dữ liệu:** sao lưu Full Backup trong SSMS, kiểm tra bản sao lưu; không chạy lại SQL khởi tạo hoặc `setup.ps1 -Reset`. File SQL khởi tạo có lệnh tạo lại bảng và sẽ làm mất dữ liệu cũ.
-
-**Máy mới chưa có BanSachDB:** ưu tiên restore bản backup dự án. Hoặc khởi tạo dữ liệu demo đúng một lần bằng `database/BansachDB_Full_CoDuLieu.sql` trong SSMS, trên đúng server và database mới. `database/setup.ps1` chỉ hỗ trợ instance mặc định local (`-S .`), mặc định dừng nếu database đã tồn tại; không dùng nó cho named instance mà chưa điều chỉnh server.
-
-Hai migration hiện có:
-
-| Migration | Thay đổi |
-|---|---|
-| Version20261026000100 | Thêm username VARCHAR(30) duy nhất, tạo tên `user_<mã>` cho dữ liệu cũ; giữ khóa INT và quan hệ giỏ |
-| Version20261026000200 | Thêm lý do từ chối NVARCHAR(255), tách khỏi ghi chú khách hàng |
+**Database đang có dữ liệu:** sao lưu, kiểm tra bản sao lưu; bỏ qua SQL khởi tạo/reset. Đối chiếu schema và SQL migration trước khi nâng cấp:
 
 ```powershell
-php bin/console doctrine:migrations:status
 php bin/console doctrine:migrations:list
 php bin/console doctrine:migrations:migrate --dry-run
-```
-
-Đọc SQL dry-run và sao lưu trước khi **chủ động** áp dụng migration còn thiếu:
-
-```powershell
+# Chỉ áp dụng migration còn thiếu sau khi đối chiếu schema và sao lưu
 php bin/console doctrine:migrations:migrate
-```
-
-Nếu đã có cột nhưng migration chưa được ghi nhận, dừng để đối chiếu schema và bảng `doctrine_migration_versions`; không chạy lại ALTER hoặc tự đánh dấu migration đã chạy. Cả hai migration đều không hỗ trợ rollback xuống vì sẽ mất username/lý do từ chối. Không dùng `schema:update --force` hoặc `schema:drop`.
-
-Kiểm tra ngày 27/10/2026 trên workspace: 2 migration đã thực thi, 0 migration mới; không áp dụng migration trong đợt kiểm thử.
-
-## Tài khoản và đăng nhập
-
-- Trang chung `/dang-nhap` nhận tên đăng nhập và mật khẩu, tự điều hướng theo ROLE_USER/ROLE_ADMIN. `/admin/dang-nhap` chỉ chuyển về trang chung.
-- Khách mới đăng ký tại `/dang-ky`. Email chỉ là thông tin liên hệ. Username không trùng tên Admin, không phân biệt chữ hoa/thường.
-- Dữ liệu mẫu sau migration có username `user_1001`…`user_1005`, Admin `admin`. Tài khoản đã đổi username dùng tên hiện tại.
-- Mật khẩu văn bản trong SQL mẫu không được chấp nhận để đăng nhập; tài khoản mới được hash ngay. Không đặt lại mật khẩu thật chỉ để chạy demo.
-
-Lệnh chỉ kiểm tra (không ghi):
-
-```powershell
-php bin/console app:account:password user 1001
-php bin/console app:account:password admin admin
-```
-
-Sau sao lưu và xác nhận đúng tài khoản demo, chuyển mật khẩu hiện có sang hash; lệnh bỏ qua tài khoản đã hash, không in mật khẩu:
-
-```powershell
-php bin/console app:account:password user 1001 --convert-legacy --apply
-php bin/console app:account:password admin admin --convert-legacy --apply
-```
-
-Hoặc đặt mật khẩu riêng bằng nhập ẩn: `php bin/console app:account:password admin admin --apply`. Các lệnh ghi mật khẩu chỉ hoạt động trong dev, từng tài khoản được chỉ định; không tự chạy khi khởi động.
-
-## Chạy và sử dụng
-
-```powershell
 php bin/console cache:clear
 php -S 127.0.0.1:8000 -t public public/index.php
 ```
 
-Mở http://127.0.0.1:8000/ (hoặc `/home`). CSS/JS do AssetMapper phục vụ qua `/assets/…`; không mở file Twig trực tiếp.
+Mở **http://127.0.0.1:8000/**. Giữ terminal chạy server; `Ctrl+C` để dừng. Không cần Node.js/npm. CSS/JS được phục vụ qua `/assets/…`.
 
-| Vai trò | Đường dẫn |
+| Migration | Nội dung |
 |---|---|
-| Khách hàng | `/trang-chu`, `/danh-muc`, `/gio-hang`, `/gio-hang/lich-su`, `/tai-khoan` |
-| Admin | `/admin/dashboard`, `/admin/gio-hang` |
+| `Version20261026000100` | Username thành viên, UNIQUE/CHECK, backfill `user_<id>` |
+| `Version20261026000200` | Lý do từ chối riêng, không ghi đè ghi chú khách |
+| `Version20261026000300` | Chủ giỏ liên kết thành viên, backfill từ MUA, Admin nullable |
+| `Version20261028000100` | Đổi khóa thành viên và hai FK liên quan sang VARCHAR(10); điện thoại VARCHAR(10), CHECK đúng 10 chữ số |
 
-Giỏ mới Chờ duyệt không trừ kho. Chỉ giỏ Chờ duyệt được sửa/hủy; Admin duyệt mới trừ kho, duyệt lại không trừ lần hai. Từ chối lưu lý do riêng và không trừ kho. Admin chỉ xóa giỏ Đã hủy/Từ chối, xóa dòng MUA cùng transaction. Giá lịch sử chưa lưu riêng: màn hình lịch sử ghi rõ tổng tính theo giá sách hiện tại. Tiền hiển thị kiểu `85.000 ₫`.
+Workspace đã áp dụng và kiểm tra **Executed=4, Available=4, New=0**. Migration mới giữ nguyên giá trị mã thành viên cũ dưới dạng chuỗi và khôi phục đầy đủ PK/FK/index. Số thử của tài khoản `gggg` được sửa thành `0000000000` theo xác nhận; các dữ liệu khác giữ nguyên. Đã tạo bản sao lưu COPY_ONLY và chạy RESTORE VERIFYONLY trước khi nâng cấp. Không dùng `schema:update --force` để sửa schema DBAL này.
 
-## Kiểm thử
+`THANH_VIEN_TEN_DANG_NHAP` là khóa định danh **VARCHAR(10)**, độc lập với username đăng nhập `THANH_VIEN_USERNAME VARCHAR(30)`. Mã mới dạng `tv` + 8 ký tự hex; đổi username không làm đổi chủ giỏ. Điện thoại bắt buộc nhập đúng 10 chữ số ở đăng ký/hồ sơ/checkout, lưu chuỗi để giữ số 0 đầu; database cho phép NULL với dữ liệu cũ, nhưng không tự cắt số dài.
 
-Chỉ chạy các test ghi dữ liệu trên database phát triển đã sao lưu, khi không có người khác đồng thời sửa dữ liệu. Không chạy smoke test trên production. Không có test nào được xem là PASS khi thiếu kết nối.
+Tài khoản mới tự hash mật khẩu. Không có mật khẩu demo được cam kết trong README; mật khẩu văn bản từ SQL cũ không đăng nhập được. Lệnh chỉ đọc `php bin/console app:account:password user 1001` hoặc `… admin admin` kiểm tra loại mật khẩu. Nếu cần chuyển đổi tài khoản mẫu được phép, xem [quy trình tài khoản](docs/CART_REPORT.md#09-cài-đặt-và-vận-hành).
 
-```powershell
-php vendor/phpunit/phpunit/phpunit --no-progress
-php tests/phase5_smoke.php
-php tests/phase6_smoke.php
-php tests/money_smoke.php
-php tests/password_input_smoke.php
-php tests/phase2_smoke.php
-php tests/phase3_smoke.php
-php tests/phase4_smoke.php
-php tests/logout_smoke.php
-php tests/phase7_smoke.php
-php bin/console lint:twig templates
-php bin/console lint:yaml config
-php bin/console lint:container
-```
+Khắc phục lỗi thường gặp:
 
-Kết quả đã chạy ngày 27/10/2026:
+- `could not find driver`: kiểm tra PHP terminal/server dùng cùng `php.ini` và bật `pdo_sqlsrv`.
+- Không kết nối: kiểm tra SQL Server service, instance/TCP, Windows user và `DATABASE_URL`.
+- Thiếu cột hoặc sai kiểu: đối chiếu đủ bốn migration; không import lại SQL mẫu vào database đang dùng.
+- Cache sau khi chuyển thư mục: `php bin/console cache:clear`; nếu CLI debug bị kẹt, dừng tiến trình PHP đang chạy rồi dùng `php bin/console cache:clear --no-debug`.
+- CSS/JS lỗi: chạy `importmap:install`, kiểm tra asset trả 200 và dùng đúng router `public/index.php`.
 
-| Nhóm | Kết quả và phạm vi |
-|---|---|
-| PHPUnit | 38 test, 163 assertion; connection giả lập, không chứng minh hành vi SQL Server |
-| phase5/phase6 | 49/47 kiểm tra dịch vụ giả lập: trạng thái, phân quyền, rollback và thứ tự khóa |
-| money/password_input | 18 kiểm tra tiền; kiểm tra nhập mật khẩu terminal giả lập, không đọc/ghi DB |
-| phase2 | 60 kiểm tra đăng ký, đăng nhập chung, xung đột tên Admin/User, hồ sơ, CSRF, đổi mật khẩu, throttling; SQL Server thật, rollback |
-| phase3 | 32 kiểm tra catalog/Create và rollback; SQL Server thật, lỗi dòng thứ hai được tiêm qua mock chuyển tiếp tới DB thật |
-| phase4 | 53 kiểm tra: 50 kiểm tra đọc/HTTP SQL Server thật, 3 kiểm tra Twig độc lập về NULL/XSS với hàm CSRF giả lập |
-| logout | 46 kiểm tra session/CSRF qua HTTP kernel, tài khoản nạp từ SQL Server thật; không ghi DB |
-| phase7 | 31 kiểm tra CRUD/duyệt/từ chối/hủy/xóa, chống ID quá lớn, trừ kho đúng một lần, rollback sau trừ kho dòng đầu; SQL Server thật |
+## 10. Kết quả, hạn chế và hướng phát triển
 
-phase2/phase3/phase7 dùng transaction ngoài và rollback; phase7 so sánh fingerprint cả sáu bảng nghiệp vụ cùng bảng version migration trước/sau. Không xóa giỏ cũ; thao tác xóa chỉ dùng giỏ tạm tạo trong test. phase2 có thể thử migration username trong transaction nếu thiếu cột; vì vậy luôn kiểm tra trạng thái migration trước khi chạy. Trong lần kiểm thử này schema đã đầy đủ.
+Đã hoàn thành luồng Cart và quy trình duyệt cơ bản, kiểm tra phía server, phân quyền theo chủ giỏ, CSRF và transaction. Đợt cải tiến này bổ sung kiểm thử checkout, chặn số lượng không dương ngay tại service, nhận đủ miền mã sách SQL INT, kiểm tra điện thoại và bỏ việc cắt mất thông tin nhận hàng.
 
-Đã kiểm tra Chrome headless ở 390/768/1440px với snapshot HTML thật của catalog, chi tiết, sửa và Admin: CSS được tải, không tràn ngang toàn trang; bảng chi tiết cuộn ngang trong vùng riêng. Snapshot dùng trang render từ SQL Server trong test rollback, không phải dữ liệu thay thế. Chưa thao tác toàn bộ biểu mẫu trực tiếp trong trình duyệt thật. KernelBrowser kiểm tra HTTP trong tiến trình PHP. Kiểm thử SQL hiện chạy tuần tự; chưa kiểm thử tải nhiều kết nối cùng duyệt/sửa/hủy và chưa xác minh cài đặt trên một máy khác.
+Hạn chế hiện tại và thứ tự phát triển đề xuất:
 
-## Khi gặp lỗi
-
-- `could not find driver`: đối chiếu `php --ini`, `php --ri pdo_sqlsrv`; khởi động lại server sau khi bật DLL.
-- Không kết nối SQL: kiểm tra instance, port/TCP, Windows user chạy PHP, chứng chỉ và DATABASE_URL; không sửa bằng cách tạo lại database.
-- Thiếu username/lý do từ chối: xem trạng thái và schema của hai migration, thực hiện theo mục migration.
-- CSS/JS lỗi: chạy `importmap:install`, kiểm tra `/assets/…` trả đúng CSS/JS và server dùng `public/index.php`.
-- Đăng nhập thất bại: dùng username hiện tại; kiểm tra hash bằng lệnh chỉ đọc ở trên, không in mật khẩu ra log.
+1. Tách địa chỉ giao hàng/phương thức/chi phí thành dữ liệu riêng, lưu đơn giá tại thời điểm đặt. Hiện lịch sử tính theo **giá sách hiện tại** và ghi rõ trên giao diện.
+2. Lưu giỏ nháp lâu dài theo tài khoản nếu cần đồng bộ thiết bị; session hiện mất khi hết hạn/đăng xuất.
+3. Tích hợp thanh toán online, callback có xác thực và trạng thái thanh toán trước khi mở VNPAY/VietQR; hiện chỉ COD.
+4. Kiểm thử nhiều kết nối đồng thời, tải lớn; thay cấp ID `MAX+1` có khóa bảng nếu cần mở rộng.
+5. Bổ sung quản lý sách/loại sách, phí vận chuyển, email và theo dõi giao hàng. Hiện chưa có các module này.

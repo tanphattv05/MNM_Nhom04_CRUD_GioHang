@@ -1,0 +1,47 @@
+﻿PASS: SQL Server connected
+PASS: Existing user and admin available
+PASS: Authenticated page
+PASS: All logout buttons present
+PASS: Logout form uses POST
+PASS: Logout token generated
+PASS: Invalid or missing token rejected
+PASS: Rejected logout preserves authentication
+PASS: Invalid or missing token rejected
+PASS: Rejected logout preserves authentication
+PASS: GET logout rejected even with token
+PASS: GET does not log out
+PASS: Valid POST redirects to matching login
+PASS: Protected page blocked after logout
+PASS: Old session cookie cannot restore authentication
+PASS: Session data invalidated
+PASS: Authenticated page
+PASS: All logout buttons present
+PASS: Logout form uses POST
+PASS: Logout form uses POST
+PASS: Logout token generated
+PASS: Invalid or missing token rejected
+PASS: Rejected logout preserves authentication
+PASS: Invalid or missing token rejected
+PASS: Rejected logout preserves authentication
+PASS: GET logout rejected even with token
+PASS: GET does not log out
+PASS: Valid POST redirects to matching login
+PASS: Protected page blocked after logout
+PASS: Old session cookie cannot restore authentication
+PASS: Session data invalidated
+PASS: Authenticated page
+PASS: All logout buttons present
+PASS: Logout form uses POST
+PASS: Logout form uses POST
+PASS: Logout token generated
+PASS: Invalid or missing token rejected
+PASS: Rejected logout preserves authentication
+PASS: Invalid or missing token rejected
+PASS: Rejected logout preserves authentication
+PASS: GET logout rejected even with token
+PASS: GET does not log out
+PASS: Valid POST redirects to matching login
+PASS: Protected page blocked after logout
+PASS: Old session cookie cannot restore authentication
+PASS: Session data invalidated
+46 checks passed; no database writes.

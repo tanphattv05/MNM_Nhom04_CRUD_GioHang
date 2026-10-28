@@ -15,10 +15,14 @@ final class AccountType extends AbstractType
                 new Assert\Length(min:4, max:30),
                 new Assert\Regex(pattern:'/^[a-zA-Z0-9_.-]{4,30}$/D', message:'Tên đăng nhập phải gồm 4–30 ký tự chữ không dấu, số, dấu chấm, gạch dưới hoặc gạch ngang.')],
             'attr'=>['minlength'=>4, 'maxlength'=>30, 'autocomplete'=>'username']]);
-        foreach (['name'=>['Họ và tên',120], 'phone'=>['Số điện thoại',20], 'address'=>['Địa chỉ',255]] as $key=>[$label,$max]) {
+        foreach (['name'=>['Họ và tên',120], 'phone'=>['Số điện thoại',10], 'address'=>['Địa chỉ',255]] as $key=>[$label,$max]) {
             $constraints = [new Assert\NotBlank(message:'Vui lòng nhập thông tin.'), new Assert\Length(max:$max)];
-            if ($key === 'phone') { $constraints[] = new Assert\Regex(pattern:'/^[+0-9 ().-]{8,20}$/', message:'Số điện thoại không hợp lệ.'); }
-            $builder->add($key, TextType::class, ['label'=>$label, 'constraints'=>$constraints, 'attr'=>['maxlength'=>$max]]);
+            $attr = ['maxlength'=>$max];
+            if ($key === 'phone') {
+                $constraints[] = new Assert\Regex(pattern:'/^[0-9]{10}$/D', message:'Số điện thoại phải gồm đúng 10 chữ số.');
+                $attr += ['minlength'=>10, 'pattern'=>'[0-9]{10}', 'inputmode'=>'numeric', 'autocomplete'=>'tel'];
+            }
+            $builder->add($key, TextType::class, ['label'=>$label, 'constraints'=>$constraints, 'attr'=>$attr]);
         }
         if ($options['register']) {
             $builder->add('email', EmailType::class, ['label'=>'Email', 'constraints'=>[new Assert\NotBlank(),new Assert\Email(message:'Email không đúng định dạng.'),new Assert\Length(max:150)]]);

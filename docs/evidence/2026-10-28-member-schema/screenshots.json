@@ -1,0 +1,65 @@
+[
+  {
+    "file": "add-to-cart.png",
+    "width": 1440,
+    "height": 1080,
+    "viewport": 1440,
+    "document": 1440,
+    "css": "\"Segoe UI\", Arial, sans-serif",
+    "title": "Giỏ hàng của tôi · Nhà sách Nhóm 04"
+  },
+  {
+    "file": "update-cart.png",
+    "width": 1440,
+    "height": 1080,
+    "viewport": 1440,
+    "document": 1440,
+    "css": "\"Segoe UI\", Arial, sans-serif",
+    "title": "Giỏ hàng của tôi · Nhà sách Nhóm 04"
+  },
+  {
+    "file": "checkout.png",
+    "width": 1440,
+    "height": 1590,
+    "viewport": 1440,
+    "document": 1425,
+    "css": "\"Segoe UI\", Arial, sans-serif",
+    "title": "Xác nhận đặt hàng & Thanh toán · Nhà sách Nhóm 04"
+  },
+  {
+    "file": "cart-validation.png",
+    "width": 1440,
+    "height": 1656,
+    "viewport": 1440,
+    "document": 1425,
+    "css": "\"Segoe UI\", Arial, sans-serif",
+    "title": "Xác nhận đặt hàng & Thanh toán · Nhà sách Nhóm 04"
+  },
+  {
+    "file": "order-detail.png",
+    "width": 1440,
+    "height": 1277,
+    "viewport": 1440,
+    "document": 1425,
+    "css": "\"Segoe UI\", Arial, sans-serif",
+    "title": "Giỏ #13 · Nhà sách Nhóm 04"
+  },
+  {
+    "file": "catalog.png",
+    "width": 1440,
+    "height": 2630,
+    "viewport": 1440,
+    "document": 1425,
+    "css": "\"Segoe UI\", Arial, sans-serif",
+    "title": "Danh mục sách · Nhà sách Nhóm 04"
+  },
+  {
+    "file": "checkout-mobile.png",
+    "width": 390,
+    "height": 2687,
+    "viewport": 390,
+    "document": 375,
+    "css": "\"Segoe UI\", Arial, sans-serif",
+    "title": "Xác nhận đặt hàng & Thanh toán · Nhà sách Nhóm 04"
+  }
+]

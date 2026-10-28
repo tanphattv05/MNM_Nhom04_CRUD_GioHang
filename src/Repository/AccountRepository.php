@@ -16,7 +16,7 @@ final class AccountRepository
     }
     public function byId(string $id, bool $admin): ?Account
     {
-        if (!$admin && !ctype_digit($id)) { return null; }
+        if (!$admin && !preg_match('/^[a-zA-Z0-9_.-]{1,10}$/D', $id)) { return null; }
         return $this->hydrate($this->db->fetchAssociative($admin ? 'SELECT * FROM dbo.QTV WHERE QTV_USER_ADMIN = ?' : 'SELECT * FROM dbo.THANH_VIEN WHERE THANH_VIEN_TEN_DANG_NHAP = ?', [$id]), $admin);
     }
     public function byLogin(string $login, bool $admin): ?Account
@@ -37,10 +37,14 @@ final class AccountRepository
     public function register(array $data, string $hash): void
     {
         $this->db->transactional(function () use ($data, $hash) {
-            // Serialize ID allocation and uniqueness checks, including an empty table.
-            $id = (int)$this->db->fetchOne('SELECT COALESCE(MAX(THANH_VIEN_TEN_DANG_NHAP), 1000) + 1 FROM dbo.THANH_VIEN WITH (TABLOCKX, HOLDLOCK)');
+            // Keep customer identity independent of the editable login username.
+            $this->db->fetchOne('SELECT COUNT(*) FROM dbo.THANH_VIEN WITH (TABLOCKX, HOLDLOCK)');
+            do {
+                $id = 'tv'.bin2hex(random_bytes(4));
+            } while ($this->db->fetchOne('SELECT COUNT(*) FROM dbo.THANH_VIEN WHERE THANH_VIEN_TEN_DANG_NHAP = ?', [$id]));
             $username = $this->checkedUsername($data['username']);
-            $this->db->insert('dbo.THANH_VIEN', ['THANH_VIEN_TEN_DANG_NHAP'=>$id, 'THANH_VIEN_USERNAME'=>$username, 'THANH_VIEN_HO_TEN'=>$data['name'], 'THANH_VIEN_EMAIL'=>$data['email'], 'THANH_VIEN_SO_DIEN_THOAI'=>$data['phone'], 'THANH_VIEN_DIA_CHI'=>$data['address'], 'THANH_VIEN_MAT_KHAU'=>$hash]);
+            $phone = self::phone($data['phone']);
+            $this->db->insert('dbo.THANH_VIEN', ['THANH_VIEN_TEN_DANG_NHAP'=>$id, 'THANH_VIEN_USERNAME'=>$username, 'THANH_VIEN_HO_TEN'=>$data['name'], 'THANH_VIEN_EMAIL'=>$data['email'], 'THANH_VIEN_SO_DIEN_THOAI'=>$phone, 'THANH_VIEN_DIA_CHI'=>$data['address'], 'THANH_VIEN_MAT_KHAU'=>$hash]);
         });
     }
     public function updateProfile(Account $user, array $data): void
@@ -48,8 +52,18 @@ final class AccountRepository
         $this->db->transactional(function () use ($user, $data): void {
             $this->db->fetchOne('SELECT COUNT(*) FROM dbo.THANH_VIEN WITH (TABLOCKX, HOLDLOCK)');
             $username = $this->checkedUsername($data['username'], $user->id);
-            $this->db->update('dbo.THANH_VIEN', ['THANH_VIEN_USERNAME'=>$username, 'THANH_VIEN_HO_TEN'=>$data['name'], 'THANH_VIEN_SO_DIEN_THOAI'=>$data['phone'], 'THANH_VIEN_DIA_CHI'=>$data['address']], ['THANH_VIEN_TEN_DANG_NHAP'=>$user->id]);
+            $phone = self::phone($data['phone']);
+            $this->db->update('dbo.THANH_VIEN', ['THANH_VIEN_USERNAME'=>$username, 'THANH_VIEN_HO_TEN'=>$data['name'], 'THANH_VIEN_SO_DIEN_THOAI'=>$phone, 'THANH_VIEN_DIA_CHI'=>$data['address']], ['THANH_VIEN_TEN_DANG_NHAP'=>$user->id]);
         });
+    }
+
+    public static function phone(string $value): string
+    {
+        $value = trim($value);
+        if (!preg_match('/^[0-9]{10}$/D', $value)) {
+            throw new \DomainException('Số điện thoại phải gồm đúng 10 chữ số.');
+        }
+        return $value;
     }
 
     private function checkedUsername(string $value, ?string $exceptId = null): string

@@ -20,6 +20,14 @@ final class CartService
         return (int)$value;
     }
 
+    public static function bookId(string $value): int
+    {
+        if (!preg_match('/^[1-9][0-9]{0,9}$/D', $value) || (int)$value > 2147483647) {
+            throw new \DomainException('Mã sách không hợp lệ.');
+        }
+        return (int)$value;
+    }
+
     private function validate(array|false $book, int $quantity): void
     {
         if (!$book) { throw new \DomainException('Sách không còn tồn tại.'); }
@@ -30,11 +38,14 @@ final class CartService
     public function modify(Account $user, int $id, string $action, int $quantity = 1): void
     {
         if ($user->admin) { throw new \DomainException('Chỉ khách hàng được tạo giỏ hàng.'); }
+        self::bookId((string)$id);
         $state = $this->state($user);
         if ($action === 'remove') { unset($state['items'][$id]); }
         else {
             if (!in_array($action, ['add','update'], true)) { throw new \DomainException('Thao tác không hợp lệ.'); }
+            self::quantity((string)$quantity);
             $quantity = $action === 'add' ? ($state['items'][$id] ?? 0) + $quantity : $quantity;
+            self::quantity((string)$quantity);
             $this->validate($this->books->find($id), $quantity);
             if (!isset($state['items'][$id]) && count($state['items']) >= 100) { throw new \DomainException('Mỗi giỏ tối đa 100 đầu sách.'); }
             $state['items'][$id] = $quantity;
@@ -68,9 +79,9 @@ final class CartService
             $id = (int)$this->db->fetchOne('SELECT COALESCE(MAX(GIO_HANG_ID_GIO), 0) + 1 FROM dbo.GIO_HANG WITH (TABLOCKX, HOLDLOCK)');
             $items = $state['items']; ksort($items);
             foreach ($items as $bookId=>$quantity) { $this->validate($this->books->find((int)$bookId, true), $quantity); }
-            $this->db->executeStatement('INSERT INTO dbo.GIO_HANG (GIO_HANG_ID_GIO, THANH_VIEN_TEN_DANG_NHAP, QTV_USER_ADMIN, GIO_HANG_THOI_GIAN, GIO_HANG_TRANG_THAI, GIO_HANG_GHI_CHU) VALUES (?, ?, NULL, SYSDATETIME(), ?, ?)', [$id, (int)$user->id, 'Chờ duyệt', $note === '' ? null : $note]);
+            $this->db->executeStatement('INSERT INTO dbo.GIO_HANG (GIO_HANG_ID_GIO, THANH_VIEN_TEN_DANG_NHAP, QTV_USER_ADMIN, GIO_HANG_THOI_GIAN, GIO_HANG_TRANG_THAI, GIO_HANG_GHI_CHU) VALUES (?, ?, NULL, SYSDATETIME(), ?, ?)', [$id, $user->id, 'Chờ duyệt', $note === '' ? null : $note]);
             foreach ($items as $bookId=>$quantity) {
-                $this->db->insert('dbo.MUA', ['THANH_VIEN_TEN_DANG_NHAP'=>(int)$user->id, 'SACH_ID_SACH'=>(int)$bookId, 'GIO_HANG_ID_GIO'=>$id, 'MUA_SO_LUONG_MUA'=>$quantity]);
+                $this->db->insert('dbo.MUA', ['THANH_VIEN_TEN_DANG_NHAP'=>$user->id, 'SACH_ID_SACH'=>(int)$bookId, 'GIO_HANG_ID_GIO'=>$id, 'MUA_SO_LUONG_MUA'=>$quantity]);
             }
             return $id;
         });
@@ -110,7 +121,7 @@ final class CartService
             }
             $this->db->executeStatement('DELETE FROM dbo.MUA WHERE GIO_HANG_ID_GIO = ?', [$id]);
             foreach ($validated as $bookId => $quantity) {
-                $this->db->insert('dbo.MUA', ['THANH_VIEN_TEN_DANG_NHAP'=>(int)$user->id, 'SACH_ID_SACH'=>$bookId, 'GIO_HANG_ID_GIO'=>$id, 'MUA_SO_LUONG_MUA'=>$quantity]);
+                $this->db->insert('dbo.MUA', ['THANH_VIEN_TEN_DANG_NHAP'=>$user->id, 'SACH_ID_SACH'=>$bookId, 'GIO_HANG_ID_GIO'=>$id, 'MUA_SO_LUONG_MUA'=>$quantity]);
             }
             $this->db->executeStatement('UPDATE dbo.GIO_HANG SET GIO_HANG_GHI_CHU = ? WHERE GIO_HANG_ID_GIO = ?', [$note === '' ? null : $note, $id]);
         });

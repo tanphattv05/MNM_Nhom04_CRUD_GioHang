@@ -1,10 +1,10 @@
 /* BanSachDB: fresh-install schema for the completed Symfony application.
    Microsoft SQL Server 2017+; run the ENTIRE file in SSMS, normal query mode.
    This is not an upgrade/reset script. Existing databases are always refused.
-   No existing SQL files or migrations need to be edited.
+   Includes the four migrations available on 2026-10-28.
    Six business tables + Doctrine migration metadata; no personal/demo data.
-   INT keys intentionally are NOT IDENTITY: the application allocates them
-   under transaction locks. No cascade deletes or extra business constraints.
+   Book/cart INT keys are not IDENTITY; member keys are VARCHAR(10).
+   No cascade deletes. Member phones are NULL or exactly ten ASCII digits.
 
    Change only the following database-name literal for a separate installation.
    If BanSachDB already exists, this script stops without modifying it.
@@ -38,10 +38,10 @@ BEGIN TRY
     BEGIN TRANSACTION;
 
     CREATE TABLE dbo.THANH_VIEN (
-        THANH_VIEN_TEN_DANG_NHAP INT NOT NULL,
+        THANH_VIEN_TEN_DANG_NHAP VARCHAR(10) COLLATE Latin1_General_100_CI_AS NOT NULL,
         THANH_VIEN_HO_TEN NVARCHAR(120) NULL,
         THANH_VIEN_EMAIL VARCHAR(150) NULL,
-        THANH_VIEN_SO_DIEN_THOAI VARCHAR(20) NULL,
+        THANH_VIEN_SO_DIEN_THOAI VARCHAR(10) NULL,
         THANH_VIEN_DIA_CHI NVARCHAR(255) NULL,
         THANH_VIEN_HINH_DAI_DIEN VARCHAR(255) NULL,
         THANH_VIEN_MAT_KHAU VARCHAR(255) NOT NULL,
@@ -51,6 +51,11 @@ BEGIN TRY
         CONSTRAINT CK_THANH_VIEN_USERNAME CHECK (
             DATALENGTH(THANH_VIEN_USERNAME) BETWEEN 4 AND 30
             AND THANH_VIEN_USERNAME COLLATE Latin1_General_100_BIN2 NOT LIKE ''%[^a-z0-9_.-]%''
+        ),
+        CONSTRAINT CK_THANH_VIEN_PHONE CHECK (
+            THANH_VIEN_SO_DIEN_THOAI IS NULL OR
+            (DATALENGTH(THANH_VIEN_SO_DIEN_THOAI) = 10
+             AND THANH_VIEN_SO_DIEN_THOAI COLLATE Latin1_General_100_BIN2 NOT LIKE ''%[^0-9]%'')
         )
     );
 
@@ -87,7 +92,7 @@ BEGIN TRY
         GIO_HANG_THOI_GIAN DATETIME NULL,
         GIO_HANG_TRANG_THAI NVARCHAR(30) NULL,
         GIO_HANG_GHI_CHU NVARCHAR(255) NULL,
-        THANH_VIEN_TEN_DANG_NHAP INT NULL,
+        THANH_VIEN_TEN_DANG_NHAP VARCHAR(10) COLLATE Latin1_General_100_CI_AS NULL,
         GIO_HANG_LY_DO_TU_CHOI NVARCHAR(255) NULL,
         CONSTRAINT PK_GIO_HANG PRIMARY KEY CLUSTERED (GIO_HANG_ID_GIO),
         CONSTRAINT FK_GIO_HANG_DUYET_QTV FOREIGN KEY (QTV_USER_ADMIN)
@@ -98,7 +103,7 @@ BEGIN TRY
     CREATE NONCLUSTERED INDEX DUYET_FK ON dbo.GIO_HANG (QTV_USER_ADMIN);
 
     CREATE TABLE dbo.MUA (
-        THANH_VIEN_TEN_DANG_NHAP INT NOT NULL,
+        THANH_VIEN_TEN_DANG_NHAP VARCHAR(10) COLLATE Latin1_General_100_CI_AS NOT NULL,
         SACH_ID_SACH INT NOT NULL,
         GIO_HANG_ID_GIO INT NOT NULL,
         MUA_SO_LUONG_MUA INT NOT NULL,
@@ -116,7 +121,7 @@ BEGIN TRY
     CREATE NONCLUSTERED INDEX MUA3_FK ON dbo.MUA (GIO_HANG_ID_GIO);
 
     -- Doctrine metadata is infrastructure, not a seventh business table.
-    -- Baseline: these two migrations are already incorporated in the DDL above.
+    -- Baseline: all four migrations are already incorporated in the DDL above.
     CREATE TABLE dbo.doctrine_migration_versions (
         version NVARCHAR(191) NOT NULL,
         executed_at DATETIME2(6) NULL,
@@ -126,7 +131,9 @@ BEGIN TRY
     INSERT INTO dbo.doctrine_migration_versions (version, executed_at, execution_time)
     VALUES
         (N''DoctrineMigrations\Version20261026000100'', SYSDATETIME(), NULL),
-        (N''DoctrineMigrations\Version20261026000200'', SYSDATETIME(), NULL);
+        (N''DoctrineMigrations\Version20261026000200'', SYSDATETIME(), NULL),
+        (N''DoctrineMigrations\Version20261026000300'', SYSDATETIME(), NULL),
+        (N''DoctrineMigrations\Version20261028000100'', SYSDATETIME(), NULL);
 
     COMMIT TRANSACTION;
 END TRY

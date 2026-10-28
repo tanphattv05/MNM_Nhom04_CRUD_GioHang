@@ -1,0 +1,7 @@
+PASS: THANH_VIEN 6 rows preserved; normalized fingerprint matches.
+PASS: QTV 1 rows preserved; normalized fingerprint matches.
+PASS: SACH 50 rows preserved; normalized fingerprint matches.
+PASS: LOAI_SACH 10 rows preserved; normalized fingerprint matches.
+PASS: GIO_HANG 12 rows preserved; normalized fingerprint matches.
+PASS: MUA 27 rows preserved; normalized fingerprint matches.
+Only the approved test phone changed; member key values and all relationships were preserved.

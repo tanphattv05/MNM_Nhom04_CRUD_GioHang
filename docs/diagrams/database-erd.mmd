@@ -1,0 +1,57 @@
+erDiagram
+    direction LR
+    QTV o|..o{ GIO_HANG : "xử lý"
+    THANH_VIEN o|..o{ GIO_HANG : "sở hữu"
+    GIO_HANG ||--o{ MUA : "gồm"
+    SACH ||--o{ MUA : "xuất hiện"
+    THANH_VIEN ||--o{ MUA : "mua"
+    LOAI_SACH ||..o{ SACH : "phân loại"
+
+    THANH_VIEN {
+        varchar THANH_VIEN_TEN_DANG_NHAP PK "VARCHAR(10); NOT NULL"
+        nvarchar THANH_VIEN_HO_TEN "NVARCHAR(120); NULL"
+        varchar THANH_VIEN_EMAIL "VARCHAR(150); NULL"
+        varchar THANH_VIEN_SO_DIEN_THOAI "VARCHAR(10); NULL"
+        nvarchar THANH_VIEN_DIA_CHI "NVARCHAR(255); NULL"
+        varchar THANH_VIEN_HINH_DAI_DIEN "VARCHAR(255); NULL"
+        varchar THANH_VIEN_MAT_KHAU "VARCHAR(255); NOT NULL"
+        varchar THANH_VIEN_USERNAME UK "VARCHAR(30); NOT NULL"
+    }
+
+    GIO_HANG {
+        int GIO_HANG_ID_GIO PK "INT; NOT NULL"
+        varchar QTV_USER_ADMIN FK "VARCHAR(60); NULL"
+        datetime GIO_HANG_THOI_GIAN "DATETIME; NULL"
+        nvarchar GIO_HANG_TRANG_THAI "NVARCHAR(30); NULL"
+        nvarchar GIO_HANG_GHI_CHU "NVARCHAR(255); NULL"
+        nvarchar GIO_HANG_LY_DO_TU_CHOI "NVARCHAR(255); NULL"
+        varchar THANH_VIEN_TEN_DANG_NHAP FK "VARCHAR(10); NULL"
+    }
+
+    QTV {
+        varchar QTV_USER_ADMIN PK "VARCHAR(60); NOT NULL"
+        nvarchar QTV_HO_TEN "NVARCHAR(120); NULL"
+        varchar QTV_EMAIL "VARCHAR(150); NULL"
+        varchar QTV_MAT_KHAU "VARCHAR(255); NOT NULL"
+    }
+
+    MUA {
+        varchar THANH_VIEN_TEN_DANG_NHAP PK,FK "VARCHAR(10); NOT NULL"
+        int SACH_ID_SACH PK,FK "INT; NOT NULL"
+        int GIO_HANG_ID_GIO PK,FK "INT; NOT NULL"
+        int MUA_SO_LUONG_MUA "INT; NOT NULL"
+    }
+
+    SACH {
+        int SACH_ID_SACH PK "INT; NOT NULL"
+        int LOAI_SACH_MA_LOAI FK "INT; NOT NULL"
+        nvarchar SACH_TEN_SACH "NVARCHAR(200); NULL"
+        nvarchar SACH_TAC_GIA "NVARCHAR(150); NULL"
+        numeric SACH_GIA_BAN "NUMERIC(12,2); NULL"
+        int SACH_SO_LUONG "INT; NULL"
+    }
+
+    LOAI_SACH {
+        int LOAI_SACH_MA_LOAI PK "INT; NOT NULL"
+        nvarchar LOAI_SACH_TEN_LOAI "NVARCHAR(100); NULL"
+    }

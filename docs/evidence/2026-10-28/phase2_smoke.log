@@ -1,0 +1,61 @@
+﻿PASS: SQL Server connected
+PASS: All usernames unique and non-NULL
+PASS: Integer primary key preserved
+PASS: Legacy admin login redirects to shared login
+PASS: Legacy admin POST only redirects
+PASS: CSRF đăng ký sai bị chặn
+PASS: Email không hợp lệ
+PASS: Xác nhận mật khẩu sai
+PASS: Mật khẩu ngắn bị chặn
+PASS: Cannot register reserved admin name
+PASS: Invalid username rejected
+PASS: Invalid username rejected
+PASS: Invalid username rejected
+PASS: Invalid username rejected
+PASS: Đăng ký hợp lệ
+PASS: Mật khẩu SQL đã hash
+PASS: Duplicate username rejected case insensitively
+PASS: Contact email may be shared by distinct usernames
+PASS: Email is never a customer login
+PASS: Username lookup preserves integer identity
+PASS: Collision resolves to admin independent of case
+PASS: Collision rejects customer password without fallback
+PASS: Collision never elevates customer privileges
+PASS: Collision accepts only admin credentials
+PASS: Admin logout uses shared login
+PASS: Không chấp nhận mật khẩu văn bản cũ
+PASS: Lệnh chuyển đổi mật khẩu mẫu
+PASS: Không hash lại mật khẩu đã hash
+PASS: Trùng tên đăng nhập
+PASS: Khách chưa đăng nhập bị chặn
+PASS: Khách Admin chưa đăng nhập bị chặn
+PASS: Sai mật khẩu khách hàng
+PASS: Email login rejected over HTTP
+PASS: Login error does not disclose account existence
+PASS: CSRF đăng nhập sai bị chặn
+PASS: Đăng nhập khách hàng
+PASS: Khách hàng bị từ chối Admin
+PASS: Cập nhật hồ sơ của chính mình
+PASS: Profile cannot claim reserved admin name
+PASS: Profile rejects another customers username
+PASS: Customer can rename temporary username
+PASS: Renaming retains immutable ID
+PASS: Renamed account session retains cart access
+PASS: Đổi mật khẩu: mật khẩu cũ sai
+PASS: CSRF đăng xuất sai giữ phiên đăng nhập
+PASS: Đăng xuất khách hàng
+PASS: Sai mật khẩu Admin
+PASS: Đăng nhập Admin
+PASS: Dashboard Admin
+PASS: Admin không truy cập hồ sơ khách hàng
+PASS: Đăng xuất Admin
+PASS: Đổi mật khẩu: mật khẩu cũ đúng
+PASS: Đổi mật khẩu vô hiệu hóa phiên
+PASS: Giới hạn đăng nhập sau nhiều lần sai
+PASS: Giữ nguyên toàn bộ dữ liệu THANH_VIEN
+PASS: Giữ nguyên toàn bộ dữ liệu QTV
+PASS: Giữ nguyên toàn bộ dữ liệu GIO_HANG
+PASS: Giữ nguyên toàn bộ dữ liệu MUA
+PASS: Giữ nguyên toàn bộ dữ liệu SACH
+PASS: Giữ nguyên toàn bộ dữ liệu LOAI_SACH
+60 checks passed. All writes rolled back.

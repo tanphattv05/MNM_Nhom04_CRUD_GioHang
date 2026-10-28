@@ -1,5 +1,12 @@
 {% extends 'account/layout.html.twig' %}
 
+{% block title %}Website bán sách · Nhóm 04 – DA23TTA{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('styles/team.css') }}">
+{% endblock %}
+
 {% block content %}
     <section class="hero public-hero">
         <div class="hero-copy">
@@ -38,5 +45,34 @@
                 Theo dõi lịch sử giỏ đã gửi và quản lý hồ sơ trong tài khoản của bạn.
             </p>
         </div>
+    </section>
+    <section id="nhom-thuc-hien" class="project-team" aria-labelledby="team-heading">
+        <div class="section-heading">
+            <div>
+                <p class="eyebrow">NHÓM 04 · LỚP DA23TTA</p>
+                <h2 id="team-heading">Nhóm thực hiện</h2>
+            </div>
+            <p>Đề tài: Website bán sách · CRUD Giỏ hàng</p>
+        </div>
+
+        {% set members = [
+            {name: 'Huỳnh Dương Tấn Phát', student_id: '110123038', role: 'Trưởng nhóm'},
+            {name: 'Trần Hoàng Oanh', student_id: '110123037', role: 'Thành viên'},
+            {name: 'Cao Á Châu', student_id: '110123206', role: 'Thành viên'},
+            {name: 'Trần Vũ Ngọc Huỳnh', student_id: '110123012', role: 'Thành viên'},
+            {name: 'Võ Thị Kiều Nhi', student_id: '110123033', role: 'Thành viên'},
+            {name: 'Nguyễn An Ninh', student_id: '110123036', role: 'Thành viên'},
+            {name: 'Phạm Bá Hạo Long', student_id: '110123024', role: 'Thư ký'}
+        ] %}
+
+        <ul class="team-list">
+            {% for member in members %}
+                <li class="team-member">
+                    <p class="team-member-role">{{ member.role }}</p>
+                    <h3>{{ member.name }}</h3>
+                    <p class="team-member-id">MSSV: {{ member.student_id }}</p>
+                </li>
+            {% endfor %}
+        </ul>
     </section>
 {% endblock %}

@@ -1,0 +1,3 @@
+PASS: fresh SQL imported to isolated database BanSachDB_SchemaCheck_20261028_4905f658; four migrations baselined.
+PASS: registration and cart creation work on fresh VARCHAR(10) schema.
+PASS: all six business tables empty after fixture rollback; test database retained.

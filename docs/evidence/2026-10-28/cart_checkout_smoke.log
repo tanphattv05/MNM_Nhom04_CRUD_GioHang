@@ -1,0 +1,26 @@
+﻿PASS: Catalog renders real SQL Server data
+PASS: Add book quantity 1
+PASS: Add book quantity 2
+PASS: Duplicate book merges and persists across requests
+PASS: Quantity update persists
+PASS: Valid cart enters checkout
+PASS: Invalid phone rejected by server
+PASS: Unsupported express shipping rejected
+PASS: Overlong combined recipient data rejected without truncation
+PASS: Changed stock blocks checkout GET
+PASS: Changed stock blocks checkout POST
+PASS: COD checkout succeeds with PRG redirect
+PASS: Server assigns owner and pending status
+PASS: Real MUA line stores requested quantity
+PASS: Total uses database price instead of client input
+PASS: Full address and message stored
+PASS: Submitting checkout does not deduct stock
+PASS: Replay does not create a second cart
+PASS: Unchanged after rollback: SACH
+PASS: Unchanged after rollback: LOAI_SACH
+PASS: Unchanged after rollback: THANH_VIEN
+PASS: Unchanged after rollback: QTV
+PASS: Unchanged after rollback: GIO_HANG
+PASS: Unchanged after rollback: MUA
+PASS: Unchanged after rollback: doctrine_migration_versions
+25 checks passed; all writes rolled back.

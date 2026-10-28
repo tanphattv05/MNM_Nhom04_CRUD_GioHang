@@ -2,6 +2,7 @@
 namespace App\Controller;
 
 use App\Service\CartService;
+use App\Service\CheckoutService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\{Request,Response};
 use Symfony\Component\Routing\Attribute\Route;
@@ -24,7 +25,7 @@ final class GioHangController extends AbstractController
     {
         if (!$this->isCsrfTokenValid('cart_modify', $request->request->getString('_token'))) { throw $this->createAccessDeniedException('Phiên biểu mẫu không hợp lệ.'); }
         try {
-            $id = CartService::quantity($request->request->getString('book_id'));
+            $id = CartService::bookId($request->request->getString('book_id'));
             $action = $request->request->getString('action');
             $quantity = $action === 'remove' ? 1 : CartService::quantity($request->request->getString('quantity'));
             $cart->modify($this->getUser(),$id,$action,$quantity);
@@ -43,7 +44,7 @@ final class GioHangController extends AbstractController
             return $this->redirectToRoute('app_my_cart');
         }
         if (!$view['valid']) {
-            $this->addFlash('cart_error', 'Một số sách trong giỏ vượt quá tồn kho. Vui lòng điều chỉnh lại số lượng.');
+            $this->addFlash('cart_error', 'Giỏ hàng có sách không hợp lệ về tồn kho hoặc giá. Vui lòng kiểm tra lại.');
             return $this->redirectToRoute('app_my_cart');
         }
 
@@ -62,7 +63,7 @@ final class GioHangController extends AbstractController
     }
 
     #[Route('/gio-hang/thanh-toan', name:'app_cart_checkout_submit', methods:['POST'])]
-    public function checkoutSubmit(Request $request, CartService $cart): Response
+    public function checkoutSubmit(Request $request, CartService $cart, CheckoutService $checkout): Response
     {
         if (!$this->isCsrfTokenValid('cart_checkout', $request->request->getString('_token'))) {
             throw $this->createAccessDeniedException('Phiên biểu mẫu không hợp lệ.');
@@ -82,47 +83,15 @@ final class GioHangController extends AbstractController
         $userNote = trim($request->request->getString('note'));
         $nonce = $request->request->getString('nonce');
 
-        $error = null;
-        if ($name === '') {
-            $error = 'Vui lòng nhập họ và tên người nhận hàng.';
-        } elseif (mb_strlen($name) > 100) {
-            $error = 'Họ và tên tối đa 100 ký tự.';
-        } elseif ($phone === '') {
-            $error = 'Vui lòng nhập số điện thoại nhận hàng.';
-        } elseif (!preg_match('/^[0-9+\s().-]{9,20}$/', $phone)) {
-            $error = 'Số điện thoại không hợp lệ (từ 9 đến 20 chữ số).';
-        } elseif ($address === '') {
-            $error = 'Vui lòng nhập địa chỉ nhận hàng chi tiết.';
-        } elseif (mb_strlen($address) > 200) {
-            $error = 'Địa chỉ giao hàng tối đa 200 ký tự.';
-        }
-
-        if ($error === null) {
-            $shippingLabel = $shippingMethod === 'express' ? 'Hỏa tốc' : 'Tiêu chuẩn';
-            $paymentLabel = match ($paymentMethod) {
-                'banking' => 'Chuyển khoản QR',
-                'vnpay' => 'VNPAY',
-                default => 'COD (Tiền mặt)',
-            };
-
-            $noteParts = [];
-            $noteParts[] = "Người nhận: {$name} - {$phone}";
-            $noteParts[] = "Đ/C: {$address}";
-            $noteParts[] = "PTTT: {$paymentLabel} | VC: {$shippingLabel}";
-            if ($userNote !== '') {
-                $noteParts[] = "Ghi chú: {$userNote}";
-            }
-            $finalNote = mb_substr(implode(' | ', $noteParts), 0, 255);
-
-            try {
-                $id = $cart->submit($this->getUser(), $nonce, $finalNote);
-                $this->addFlash('success', 'Đặt hàng thành công! Đơn hàng #' . $id . ' đã được ghi nhận ở trạng thái Chờ duyệt.');
-                return $this->redirectToRoute('app_cart_detail', ['id' => $id], Response::HTTP_SEE_OTHER);
-            } catch (\DomainException $e) {
-                $error = $e->getMessage();
-            } catch (\Doctrine\DBAL\Exception) {
-                $error = 'Chưa thể gửi đơn hàng. Dữ liệu chưa được lưu. Vui lòng thử lại sau.';
-            }
+        try {
+            $finalNote = $checkout->note($name, $phone, $address, $shippingMethod, $paymentMethod, $userNote);
+            $id = $cart->submit($this->getUser(), $nonce, $finalNote);
+            $this->addFlash('success', 'Đặt hàng thành công! Đơn hàng #' . $id . ' đã được ghi nhận ở trạng thái Chờ duyệt.');
+            return $this->redirectToRoute('app_cart_detail', ['id' => $id], Response::HTTP_SEE_OTHER);
+        } catch (\DomainException $e) {
+            $error = $e->getMessage();
+        } catch (\Doctrine\DBAL\Exception) {
+            $error = 'Chưa thể gửi đơn hàng. Dữ liệu chưa được lưu. Vui lòng thử lại sau.';
         }
 
         return $this->render('gio_hang/checkout.html.twig', $view + [

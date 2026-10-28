@@ -45,7 +45,7 @@ try {
         check((int)$db->fetchOne("SELECT COUNT(*) FROM dbo.THANH_VIEN WHERE THANH_VIEN_USERNAME <> 'user_' + CONVERT(varchar(11), THANH_VIEN_TEN_DANG_NHAP)") === 0, 'Migration backfills unique temporary usernames');
     }
     check((int)$db->fetchOne('SELECT COUNT(*) - COUNT(DISTINCT THANH_VIEN_USERNAME) FROM dbo.THANH_VIEN') === 0, 'All usernames unique and non-NULL');
-    check($db->fetchOne("SELECT DATA_TYPE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA='dbo' AND TABLE_NAME='THANH_VIEN' AND COLUMN_NAME='THANH_VIEN_TEN_DANG_NHAP'") === 'int', 'Integer primary key preserved');
+    check($db->fetchOne("SELECT DATA_TYPE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA='dbo' AND TABLE_NAME='THANH_VIEN' AND COLUMN_NAME='THANH_VIEN_TEN_DANG_NHAP'") === 'varchar', 'Member primary key uses VARCHAR');
     $suffix = bin2hex(random_bytes(6));
     $username = 'test_'.$suffix;
     $email = 'phase2-'.$suffix.'@example.test';
@@ -81,7 +81,7 @@ try {
     check($client->getResponse()->isRedirect('/dang-nhap'), 'Contact email may be shared by distinct usernames');
     $repository = new App\Repository\AccountRepository($db);
     check($repository->byLogin($email, false) === null, 'Email is never a customer login');
-    check($repository->byLogin(strtoupper($username), false)?->id === (string)$row['THANH_VIEN_TEN_DANG_NHAP'], 'Username lookup preserves integer identity');
+    check($repository->byLogin(strtoupper($username), false)?->id === (string)$row['THANH_VIEN_TEN_DANG_NHAP'], 'Username lookup preserves string member identity');
     // Simulate an existing cross-table collision without changing stored accounts.
     $collisionPassword = bin2hex(random_bytes(12));
     $db->insert('dbo.QTV', ['QTV_USER_ADMIN'=>$username, 'QTV_HO_TEN'=>'Collision fixture', 'QTV_MAT_KHAU'=>password_hash($collisionPassword, PASSWORD_BCRYPT)]);
@@ -119,6 +119,11 @@ try {
     page('/admin/dashboard'); check($client->getResponse()->getStatusCode()===403,'Khách hàng bị từ chối Admin');
     $crawler = page('/tai-khoan'); $client->submit($crawler->selectButton('Lưu thông tin')->form(['account[name]'=>'Tên đã cập nhật']));
     check($client->getResponse()->isRedirect('/tai-khoan') && $db->fetchOne('SELECT THANH_VIEN_HO_TEN FROM dbo.THANH_VIEN WHERE THANH_VIEN_EMAIL = ?',[$email])==='Tên đã cập nhật','Cập nhật hồ sơ của chính mình');
+    foreach (['090123456','09012345678','09012a4567'] as $invalidPhone) {
+        $crawler = page('/tai-khoan');
+        $client->submit($crawler->selectButton('Lưu thông tin')->form(['account[phone]'=>$invalidPhone]));
+        check($client->getResponse()->getStatusCode()===422 && $db->fetchOne('SELECT THANH_VIEN_SO_DIEN_THOAI FROM dbo.THANH_VIEN WHERE THANH_VIEN_EMAIL = ?',[$email])==='0901234567', 'Profile rejects non-ten-digit phone and preserves stored value');
+    }
     $crawler = page('/tai-khoan');
     $client->submit($crawler->selectButton('Lưu thông tin')->form(['account[username]'=>$admin]));
     check($client->getResponse()->getStatusCode() === 422, 'Profile cannot claim reserved admin name');

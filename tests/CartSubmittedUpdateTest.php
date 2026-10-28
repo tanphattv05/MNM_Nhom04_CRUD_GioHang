@@ -106,7 +106,7 @@ final class CartSubmittedUpdateTest extends TestCase
             $writes[] = [$sql, $params];
             return 1;
         });
-        $db->expects(self::once())->method('insert')->with('dbo.MUA', ['THANH_VIEN_TEN_DANG_NHAP'=>1, 'SACH_ID_SACH'=>2, 'GIO_HANG_ID_GIO'=>7, 'MUA_SO_LUONG_MUA'=>3])->willReturnCallback(static function () use (&$inside) { self::assertTrue($inside); return 1; });
+        $db->expects(self::once())->method('insert')->with('dbo.MUA', ['THANH_VIEN_TEN_DANG_NHAP'=>'1', 'SACH_ID_SACH'=>2, 'GIO_HANG_ID_GIO'=>7, 'MUA_SO_LUONG_MUA'=>3])->willReturnCallback(static function () use (&$inside) { self::assertTrue($inside); return 1; });
         $this->service($db)->updateSubmitted(new Account('1', false, ''), 7, [2=>'3'], 'Giao buổi sáng');
         self::assertSame([
             ['DELETE FROM dbo.MUA WHERE GIO_HANG_ID_GIO = ?', [7]],

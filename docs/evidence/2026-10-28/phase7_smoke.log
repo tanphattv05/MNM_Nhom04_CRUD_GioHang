@@ -1,0 +1,32 @@
+﻿PASS: Read own created cart
+PASS: Edit page renders
+PASS: History navigation stays active on edit
+PASS: Out-of-range SQL INT cart ID returns 404
+PASS: Edit rejects bad CSRF
+PASS: Oversized book ID returns validation error
+PASS: Update submitted cart on SQL Server
+PASS: Foreign cart hidden /gio-hang/lich-su/12
+PASS: Foreign cart hidden /gio-hang/lich-su/12/sua
+PASS: Customer cannot approve
+PASS: Search and status filter render actual cart
+PASS: Approve rejects bad CSRF
+PASS: Approve deducts exact quantities
+PASS: Repeated approval never deducts twice
+PASS: Approved cart cannot be edited
+PASS: Approved cart cannot be deleted
+PASS: Rejection keeps separate reason and note
+PASS: Rejection never deducts stock
+PASS: Delete rejects bad CSRF
+PASS: Delete rejected cart and child lines
+PASS: Cancel rejects bad CSRF
+PASS: Cancel retains history and stock
+PASS: Delete cancelled cart
+PASS: SQL transaction rolls back earlier stock deduction on later failure
+PASS: Original data unchanged SACH
+PASS: Original data unchanged LOAI_SACH
+PASS: Original data unchanged THANH_VIEN
+PASS: Original data unchanged QTV
+PASS: Original data unchanged GIO_HANG
+PASS: Original data unchanged MUA
+PASS: Original data unchanged doctrine_migration_versions
+31 SQL Server checks passed; all writes rolled back.

@@ -12,7 +12,7 @@ final class AccountProvider implements UserProviderInterface
     public function __construct(private AccountRepository $accounts) {}
     public function loadUserByIdentifier(string $identifier): UserInterface
     {
-        // Sessions retain the immutable integer customer ID. Login usernames
+        // Sessions retain the immutable VARCHAR(10) customer key. Login usernames
         // are resolved by LoginAuthenticator; renaming never changes ownership.
         [$kind, $id] = array_pad(explode(':', $identifier, 2), 2, '');
         $user = in_array($kind, ['admin','user'], true) ? $this->accounts->byId($id, $kind === 'admin') : null;

@@ -1,0 +1,6 @@
+[notice] Migrating up to DoctrineMigrations\Version20261028000100
+[notice] finished in 245.2ms, used 24M memory, 1 migrations executed, 21 sql queries
+
+ [OK] Successfully migrated to version: DoctrineMigrations\Version20261028000100                                       
+
+

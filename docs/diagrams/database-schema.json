@@ -1,0 +1,465 @@
+{
+    "database": "BanSachDB",
+    "verified_on": "2026-10-28",
+    "tables": {
+        "THANH_VIEN": [
+            {
+                "name": "THANH_VIEN_TEN_DANG_NHAP",
+                "type": "varchar",
+                "length": "10",
+                "precision": "0",
+                "scale": "0",
+                "is_nullable": false,
+                "is_identity": false,
+                "is_primary_key": true,
+                "is_foreign_key": false,
+                "is_unique": false,
+                "sql_type": "VARCHAR(10)"
+            },
+            {
+                "name": "THANH_VIEN_HO_TEN",
+                "type": "nvarchar",
+                "length": "120",
+                "precision": "0",
+                "scale": "0",
+                "is_nullable": true,
+                "is_identity": false,
+                "is_primary_key": false,
+                "is_foreign_key": false,
+                "is_unique": false,
+                "sql_type": "NVARCHAR(120)"
+            },
+            {
+                "name": "THANH_VIEN_EMAIL",
+                "type": "varchar",
+                "length": "150",
+                "precision": "0",
+                "scale": "0",
+                "is_nullable": true,
+                "is_identity": false,
+                "is_primary_key": false,
+                "is_foreign_key": false,
+                "is_unique": false,
+                "sql_type": "VARCHAR(150)"
+            },
+            {
+                "name": "THANH_VIEN_SO_DIEN_THOAI",
+                "type": "varchar",
+                "length": "10",
+                "precision": "0",
+                "scale": "0",
+                "is_nullable": true,
+                "is_identity": false,
+                "is_primary_key": false,
+                "is_foreign_key": false,
+                "is_unique": false,
+                "sql_type": "VARCHAR(10)"
+            },
+            {
+                "name": "THANH_VIEN_DIA_CHI",
+                "type": "nvarchar",
+                "length": "255",
+                "precision": "0",
+                "scale": "0",
+                "is_nullable": true,
+                "is_identity": false,
+                "is_primary_key": false,
+                "is_foreign_key": false,
+                "is_unique": false,
+                "sql_type": "NVARCHAR(255)"
+            },
+            {
+                "name": "THANH_VIEN_HINH_DAI_DIEN",
+                "type": "varchar",
+                "length": "255",
+                "precision": "0",
+                "scale": "0",
+                "is_nullable": true,
+                "is_identity": false,
+                "is_primary_key": false,
+                "is_foreign_key": false,
+                "is_unique": false,
+                "sql_type": "VARCHAR(255)"
+            },
+            {
+                "name": "THANH_VIEN_MAT_KHAU",
+                "type": "varchar",
+                "length": "255",
+                "precision": "0",
+                "scale": "0",
+                "is_nullable": false,
+                "is_identity": false,
+                "is_primary_key": false,
+                "is_foreign_key": false,
+                "is_unique": false,
+                "sql_type": "VARCHAR(255)"
+            },
+            {
+                "name": "THANH_VIEN_USERNAME",
+                "type": "varchar",
+                "length": "30",
+                "precision": "0",
+                "scale": "0",
+                "is_nullable": false,
+                "is_identity": false,
+                "is_primary_key": false,
+                "is_foreign_key": false,
+                "is_unique": true,
+                "sql_type": "VARCHAR(30)"
+            }
+        ],
+        "GIO_HANG": [
+            {
+                "name": "GIO_HANG_ID_GIO",
+                "type": "int",
+                "length": "4",
+                "precision": "10",
+                "scale": "0",
+                "is_nullable": false,
+                "is_identity": false,
+                "is_primary_key": true,
+                "is_foreign_key": false,
+                "is_unique": false,
+                "sql_type": "INT"
+            },
+            {
+                "name": "QTV_USER_ADMIN",
+                "type": "varchar",
+                "length": "60",
+                "precision": "0",
+                "scale": "0",
+                "is_nullable": true,
+                "is_identity": false,
+                "is_primary_key": false,
+                "is_foreign_key": true,
+                "is_unique": false,
+                "sql_type": "VARCHAR(60)"
+            },
+            {
+                "name": "GIO_HANG_THOI_GIAN",
+                "type": "datetime",
+                "length": "8",
+                "precision": "23",
+                "scale": "3",
+                "is_nullable": true,
+                "is_identity": false,
+                "is_primary_key": false,
+                "is_foreign_key": false,
+                "is_unique": false,
+                "sql_type": "DATETIME"
+            },
+            {
+                "name": "GIO_HANG_TRANG_THAI",
+                "type": "nvarchar",
+                "length": "30",
+                "precision": "0",
+                "scale": "0",
+                "is_nullable": true,
+                "is_identity": false,
+                "is_primary_key": false,
+                "is_foreign_key": false,
+                "is_unique": false,
+                "sql_type": "NVARCHAR(30)"
+            },
+            {
+                "name": "GIO_HANG_GHI_CHU",
+                "type": "nvarchar",
+                "length": "255",
+                "precision": "0",
+                "scale": "0",
+                "is_nullable": true,
+                "is_identity": false,
+                "is_primary_key": false,
+                "is_foreign_key": false,
+                "is_unique": false,
+                "sql_type": "NVARCHAR(255)"
+            },
+            {
+                "name": "GIO_HANG_LY_DO_TU_CHOI",
+                "type": "nvarchar",
+                "length": "255",
+                "precision": "0",
+                "scale": "0",
+                "is_nullable": true,
+                "is_identity": false,
+                "is_primary_key": false,
+                "is_foreign_key": false,
+                "is_unique": false,
+                "sql_type": "NVARCHAR(255)"
+            },
+            {
+                "name": "THANH_VIEN_TEN_DANG_NHAP",
+                "type": "varchar",
+                "length": "10",
+                "precision": "0",
+                "scale": "0",
+                "is_nullable": true,
+                "is_identity": false,
+                "is_primary_key": false,
+                "is_foreign_key": true,
+                "is_unique": false,
+                "sql_type": "VARCHAR(10)"
+            }
+        ],
+        "QTV": [
+            {
+                "name": "QTV_USER_ADMIN",
+                "type": "varchar",
+                "length": "60",
+                "precision": "0",
+                "scale": "0",
+                "is_nullable": false,
+                "is_identity": false,
+                "is_primary_key": true,
+                "is_foreign_key": false,
+                "is_unique": false,
+                "sql_type": "VARCHAR(60)"
+            },
+            {
+                "name": "QTV_HO_TEN",
+                "type": "nvarchar",
+                "length": "120",
+                "precision": "0",
+                "scale": "0",
+                "is_nullable": true,
+                "is_identity": false,
+                "is_primary_key": false,
+                "is_foreign_key": false,
+                "is_unique": false,
+                "sql_type": "NVARCHAR(120)"
+            },
+            {
+                "name": "QTV_EMAIL",
+                "type": "varchar",
+                "length": "150",
+                "precision": "0",
+                "scale": "0",
+                "is_nullable": true,
+                "is_identity": false,
+                "is_primary_key": false,
+                "is_foreign_key": false,
+                "is_unique": false,
+                "sql_type": "VARCHAR(150)"
+            },
+            {
+                "name": "QTV_MAT_KHAU",
+                "type": "varchar",
+                "length": "255",
+                "precision": "0",
+                "scale": "0",
+                "is_nullable": false,
+                "is_identity": false,
+                "is_primary_key": false,
+                "is_foreign_key": false,
+                "is_unique": false,
+                "sql_type": "VARCHAR(255)"
+            }
+        ],
+        "MUA": [
+            {
+                "name": "THANH_VIEN_TEN_DANG_NHAP",
+                "type": "varchar",
+                "length": "10",
+                "precision": "0",
+                "scale": "0",
+                "is_nullable": false,
+                "is_identity": false,
+                "is_primary_key": true,
+                "is_foreign_key": true,
+                "is_unique": false,
+                "sql_type": "VARCHAR(10)"
+            },
+            {
+                "name": "SACH_ID_SACH",
+                "type": "int",
+                "length": "4",
+                "precision": "10",
+                "scale": "0",
+                "is_nullable": false,
+                "is_identity": false,
+                "is_primary_key": true,
+                "is_foreign_key": true,
+                "is_unique": false,
+                "sql_type": "INT"
+            },
+            {
+                "name": "GIO_HANG_ID_GIO",
+                "type": "int",
+                "length": "4",
+                "precision": "10",
+                "scale": "0",
+                "is_nullable": false,
+                "is_identity": false,
+                "is_primary_key": true,
+                "is_foreign_key": true,
+                "is_unique": false,
+                "sql_type": "INT"
+            },
+            {
+                "name": "MUA_SO_LUONG_MUA",
+                "type": "int",
+                "length": "4",
+                "precision": "10",
+                "scale": "0",
+                "is_nullable": false,
+                "is_identity": false,
+                "is_primary_key": false,
+                "is_foreign_key": false,
+                "is_unique": false,
+                "sql_type": "INT"
+            }
+        ],
+        "SACH": [
+            {
+                "name": "SACH_ID_SACH",
+                "type": "int",
+                "length": "4",
+                "precision": "10",
+                "scale": "0",
+                "is_nullable": false,
+                "is_identity": false,
+                "is_primary_key": true,
+                "is_foreign_key": false,
+                "is_unique": false,
+                "sql_type": "INT"
+            },
+            {
+                "name": "LOAI_SACH_MA_LOAI",
+                "type": "int",
+                "length": "4",
+                "precision": "10",
+                "scale": "0",
+                "is_nullable": false,
+                "is_identity": false,
+                "is_primary_key": false,
+                "is_foreign_key": true,
+                "is_unique": false,
+                "sql_type": "INT"
+            },
+            {
+                "name": "SACH_TEN_SACH",
+                "type": "nvarchar",
+                "length": "200",
+                "precision": "0",
+                "scale": "0",
+                "is_nullable": true,
+                "is_identity": false,
+                "is_primary_key": false,
+                "is_foreign_key": false,
+                "is_unique": false,
+                "sql_type": "NVARCHAR(200)"
+            },
+            {
+                "name": "SACH_TAC_GIA",
+                "type": "nvarchar",
+                "length": "150",
+                "precision": "0",
+                "scale": "0",
+                "is_nullable": true,
+                "is_identity": false,
+                "is_primary_key": false,
+                "is_foreign_key": false,
+                "is_unique": false,
+                "sql_type": "NVARCHAR(150)"
+            },
+            {
+                "name": "SACH_GIA_BAN",
+                "type": "numeric",
+                "length": "9",
+                "precision": "12",
+                "scale": "2",
+                "is_nullable": true,
+                "is_identity": false,
+                "is_primary_key": false,
+                "is_foreign_key": false,
+                "is_unique": false,
+                "sql_type": "NUMERIC(12,2)"
+            },
+            {
+                "name": "SACH_SO_LUONG",
+                "type": "int",
+                "length": "4",
+                "precision": "10",
+                "scale": "0",
+                "is_nullable": true,
+                "is_identity": false,
+                "is_primary_key": false,
+                "is_foreign_key": false,
+                "is_unique": false,
+                "sql_type": "INT"
+            }
+        ],
+        "LOAI_SACH": [
+            {
+                "name": "LOAI_SACH_MA_LOAI",
+                "type": "int",
+                "length": "4",
+                "precision": "10",
+                "scale": "0",
+                "is_nullable": false,
+                "is_identity": false,
+                "is_primary_key": true,
+                "is_foreign_key": false,
+                "is_unique": false,
+                "sql_type": "INT"
+            },
+            {
+                "name": "LOAI_SACH_TEN_LOAI",
+                "type": "nvarchar",
+                "length": "100",
+                "precision": "0",
+                "scale": "0",
+                "is_nullable": true,
+                "is_identity": false,
+                "is_primary_key": false,
+                "is_foreign_key": false,
+                "is_unique": false,
+                "sql_type": "NVARCHAR(100)"
+            }
+        ]
+    },
+    "relationships": [
+        {
+            "child_table": "GIO_HANG",
+            "child_column": "QTV_USER_ADMIN",
+            "parent_table": "QTV",
+            "parent_column": "QTV_USER_ADMIN",
+            "optional_parent": true
+        },
+        {
+            "child_table": "GIO_HANG",
+            "child_column": "THANH_VIEN_TEN_DANG_NHAP",
+            "parent_table": "THANH_VIEN",
+            "parent_column": "THANH_VIEN_TEN_DANG_NHAP",
+            "optional_parent": true
+        },
+        {
+            "child_table": "MUA",
+            "child_column": "GIO_HANG_ID_GIO",
+            "parent_table": "GIO_HANG",
+            "parent_column": "GIO_HANG_ID_GIO",
+            "optional_parent": false
+        },
+        {
+            "child_table": "MUA",
+            "child_column": "SACH_ID_SACH",
+            "parent_table": "SACH",
+            "parent_column": "SACH_ID_SACH",
+            "optional_parent": false
+        },
+        {
+            "child_table": "MUA",
+            "child_column": "THANH_VIEN_TEN_DANG_NHAP",
+            "parent_table": "THANH_VIEN",
+            "parent_column": "THANH_VIEN_TEN_DANG_NHAP",
+            "optional_parent": false
+        },
+        {
+            "child_table": "SACH",
+            "child_column": "LOAI_SACH_MA_LOAI",
+            "parent_table": "LOAI_SACH",
+            "parent_column": "LOAI_SACH_MA_LOAI",
+            "optional_parent": false
+        }
+    ]
+}

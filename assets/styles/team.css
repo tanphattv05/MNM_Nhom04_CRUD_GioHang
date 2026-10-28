@@ -1,0 +1,52 @@
+.project-team {
+    margin-top: 36px;
+    padding-top: 12px;
+    border-top: 1px solid var(--line);
+    scroll-margin-top: 24px;
+}
+
+.project-team .section-heading {
+    align-items: flex-start;
+}
+
+.team-list {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    border-top: 1px solid var(--line);
+}
+
+.team-member {
+    min-width: 0;
+    padding: 24px 20px 24px 0;
+    border-bottom: 1px solid var(--line);
+}
+
+.team-member-role {
+    color: var(--blue);
+    font-size: .78rem;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.team-member h3 {
+    font-size: 1rem;
+    letter-spacing: normal;
+}
+
+.team-member-id {
+    margin-top: 8px;
+    font-size: .82rem;
+    font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 900px) {
+    .team-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 540px) {
+    .team-list { grid-template-columns: 1fr; }
+    .team-member { padding-right: 0; }
+}
