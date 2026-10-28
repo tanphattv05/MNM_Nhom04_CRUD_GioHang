@@ -53,9 +53,9 @@ Giỏ nháp dùng Symfony Session; giỏ đã gửi dùng `GIO_HANG` và `MUA` t
 | [Kiến trúc ứng dụng](docs/diagrams/architecture.md) — giao diện, Controller, Service và tầng dữ liệu | [![Kiến trúc ứng dụng](docs/diagrams/architecture.png)](docs/diagrams/architecture.png) |
 | [Use Case](docs/diagrams/use-case.md) — chức năng của khách hàng và quản trị viên | [![Use Case module giỏ hàng](docs/diagrams/use-case.png)](docs/diagrams/use-case.png) |
 | [Sequence](docs/diagrams/cart-sequence.md) — luồng thêm sách và xác nhận đặt hàng | [![Sequence thêm sách và đặt hàng](docs/diagrams/cart-sequence.png)](docs/diagrams/cart-sequence.png) |
-| [ERD](docs/diagrams/database-erd.md) — sáu bảng nghiệp vụ và các khóa liên kết | [![ERD website bán sách](docs/diagrams/database-erd.png)](docs/diagrams/database-erd.png) |
+| [ERD](docs/diagrams/database-erd.md) — mô hình thiết kế do nhóm cung cấp | [![ERD gốc của nhóm](docs/diagrams/database-erd-original.png)](docs/diagrams/database-erd-original.png) |
 
-Phân tích chi tiết: [báo cáo Cart](docs/CART_REPORT.md). Bản vector và bản dùng trong báo cáo: [SVG ERD](docs/diagrams/database-erd.svg), [PDF ERD](docs/diagrams/database-erd.pdf).
+Phân tích chi tiết: [báo cáo Cart](docs/CART_REPORT.md). Sơ đồ vật lý để đối chiếu với database SQL Server: [PNG](docs/diagrams/database-erd.png), [SVG](docs/diagrams/database-erd.svg), [PDF](docs/diagrams/database-erd.pdf).
 
 ## 03. Dữ liệu và cấu trúc repository
 

@@ -1,12 +1,20 @@
-# ERD · Sáu bảng nghiệp vụ SQL Server
+# ERD · Website bán sách
 
-**Website bán sách – Nhóm 04, lớp DA23TTA.** Sơ đồ được đối chiếu trực tiếp với metadata SQL Server của `BanSachDB` ngày 28/10/2026: 6 bảng nghiệp vụ, 31 cột và 6 khóa ngoại. Đây là ERD vật lý của website hiện tại, phát triển từ mô hình khái niệm trong ảnh thiết kế ban đầu.
+**Website bán sách – Nhóm 04, lớp DA23TTA.** Ảnh dưới đây là mô hình ERD gốc do nhóm cung cấp, gồm Sách, Loại sách, Thành viên, Giỏ hàng, QTV và quan hệ Mua.
 
-![ERD website bán sách](database-erd.png)
+[![ERD gốc của nhóm](database-erd-original.png)](database-erd-original.png)
 
-**Tải để đưa vào báo cáo:** [PNG](database-erd.png) · [SVG vector](database-erd.svg) · [PDF](database-erd.pdf). [Mã Mermaid](database-erd.mmd) và [metadata đã đối chiếu](database-schema.json) được lưu cùng thư mục.
+**Ảnh gốc dùng trong báo cáo:** [Tải PNG](database-erd-original.png).
 
-## Những điểm cần cập nhật từ ảnh thiết kế ban đầu
+## Đối chiếu với database đang triển khai
+
+Sơ đồ vật lý bên dưới được đối chiếu trực tiếp với metadata SQL Server của `BanSachDB` ngày 28/10/2026: 6 bảng nghiệp vụ, 31 cột và 6 khóa ngoại.
+
+![ERD vật lý của database SQL Server](database-erd.png)
+
+**Tải sơ đồ vật lý:** [PNG](database-erd.png) · [SVG vector](database-erd.svg) · [PDF](database-erd.pdf). [Mã Mermaid](database-erd.mmd) và [metadata đã đối chiếu](database-schema.json) được lưu cùng thư mục.
+
+### Khác biệt giữa mô hình thiết kế và database triển khai
 
 | Thành phần | Website đang triển khai |
 |---|---|
@@ -31,7 +39,7 @@
 | `SACH` – `MUA` | 1 – 0..N | Mỗi dòng mua liên kết đúng một sách |
 | `GIO_HANG` – `MUA` | 1 – 0..N | Mỗi dòng thuộc đúng một giỏ; ứng dụng yêu cầu ít nhất một dòng khi gửi giỏ |
 
-Bội số tối thiểu trong sơ đồ phản ánh ràng buộc vật lý, không suy diễn rằng mọi thành viên phải mua hàng hoặc mọi loại sách phải có sách. Nét liền biểu diễn quan hệ định danh, FK nằm trong khóa chính của bảng con; nét đứt biểu diễn FK không thuộc khóa chính.
+Bội số tối thiểu trong sơ đồ vật lý phản ánh ràng buộc database, không suy diễn rằng mọi thành viên phải mua hàng hoặc mọi loại sách phải có sách. Nét liền biểu diễn quan hệ định danh, FK nằm trong khóa chính của bảng con; nét đứt biểu diễn FK không thuộc khóa chính.
 
 ## Sơ đồ Mermaid có thể chỉnh sửa
 
@@ -103,7 +111,7 @@ Không cần bổ sung bảng `CHECKOUT` vào ERD: checkout là quy trình xác 
 
 > Cơ sở dữ liệu BanSachDB gồm sáu bảng nghiệp vụ: LOAI_SACH, SACH, THANH_VIEN, QTV, GIO_HANG và MUA. Bảng GIO_HANG lưu thông tin chung và khách hàng sở hữu giỏ hàng; bảng MUA lưu sách cùng số lượng của từng giỏ. Mỗi sách thuộc một loại sách và có thể xuất hiện trong nhiều dòng mua. Một thành viên có thể sở hữu nhiều giỏ; một quản trị viên có thể xử lý nhiều giỏ. Giỏ chưa được xử lý có thể chưa liên kết quản trị viên. Các khóa chính, khóa ngoại và khóa chính ghép của MUA bảo đảm tính toàn vẹn tham chiếu giữa các bảng.
 
-## Tạo lại sơ đồ
+## Tạo lại sơ đồ vật lý
 
 Chạy tại thư mục gốc dự án, với cấu hình database hiện tại. Lệnh PHP chỉ đọc metadata schema, không đọc dữ liệu tài khoản và không ghi database. Công cụ Python phục vụ xuất tài liệu, không phải dependency để chạy website.
 
@@ -115,3 +123,5 @@ python scripts/render_erd.py
 ```
 
 Renderer tạo PNG, SVG, PDF, mã Mermaid và đồng bộ khối Mermaid trong tài liệu này từ `database-schema.json`. Nếu cấu trúc quan hệ thay đổi, cần kiểm tra và điều chỉnh bố cục trước khi xuất lại.
+
+Ảnh gốc của nhóm được lưu riêng tại `database-erd-original.png`.
